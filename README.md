@@ -6,5 +6,6 @@ Repository for the course project.
 
 - [Milestone 1: Project Inception](Milestone_1-Project_Inception)
 - [Milestone 2:  Proof of Concept](Milestone_2-PoC)
+- [Milestone 3:  Data Acquisition Validation and Preparation](Milestone_3-Data_Prep)
 
 ---
