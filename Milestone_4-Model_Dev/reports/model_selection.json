@@ -1,0 +1,8 @@
+{
+  "selection_rule": "highest validation F1, tie-broken by validation ROC-AUC, then validation precision, then model_name",
+  "selected_model_family": "random_forest",
+  "selected_threshold": 0.5,
+  "selected_validation_f1": 0.634920634920635,
+  "selected_validation_roc_auc": 0.8943908851884312,
+  "selected_test_f1": 0.3571428571428571
+}

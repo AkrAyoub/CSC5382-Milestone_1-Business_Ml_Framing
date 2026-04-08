@@ -1,0 +1,16 @@
+instance_id,facility_count_m,customer_count_n,split
+cap74,16,50,test
+cap104,25,50,test
+cap134,50,50,test
+capc,100,1000,test
+cap71,16,50,train
+cap72,16,50,train
+cap101,25,50,train
+cap102,25,50,train
+cap131,50,50,train
+cap132,50,50,train
+capa,100,1000,train
+cap73,16,50,val
+cap103,25,50,val
+cap133,50,50,val
+capb,100,1000,val

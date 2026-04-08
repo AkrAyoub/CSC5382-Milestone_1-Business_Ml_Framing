@@ -1,0 +1,40 @@
+run_name: facility_opening_model_comparison
+random_seed: 42
+regenerate_labels: false
+feature_set: facility_plus_instance
+tracking:
+  enable_mlflow: true
+  experiment_name: milestone4-model-comparison
+comparison:
+  model_names:
+    - dummy_prior
+    - logreg_numpy
+    - logreg_sklearn
+    - random_forest
+    - hist_gradient_boosting
+  random_forest:
+    n_estimators: 400
+    max_depth: 8
+    min_samples_leaf: 3
+    class_weight: balanced
+  hist_gradient_boosting:
+    learning_rate: 0.05
+    max_depth: 4
+    max_iter: 300
+    early_stopping: false
+  threshold_grid:
+    - 0.10
+    - 0.15
+    - 0.20
+    - 0.25
+    - 0.30
+    - 0.35
+    - 0.40
+    - 0.45
+    - 0.50
+    - 0.55
+    - 0.60
+    - 0.65
+    - 0.70
+    - 0.75
+    - 0.80
