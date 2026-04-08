@@ -18,6 +18,8 @@ M4_ARTIFACTS_DIR = M4_ROOT / "artifacts"
 M4_REPORTS_DIR = M4_ROOT / "reports"
 M4_CONFIGS_DIR = M4_ROOT / "configs"
 M4_MLFLOW_DIR = M4_ROOT / "mlruns"
+M4_ZEN_CONFIG_DIR = M4_ROOT / ".zen"
+M4_ZEN_LOCAL_STORE_DIR = M4_ROOT.parent.parent / ".zen_local"
 
 M3_FEATURES_DIR = M3_ROOT / "data" / "features"
 M3_RAW_DIR = M3_ROOT / "data" / "raw"
@@ -32,6 +34,8 @@ def ensure_runtime_dirs() -> None:
         M4_ARTIFACTS_DIR,
         M4_REPORTS_DIR,
         M4_MLFLOW_DIR,
+        M4_ZEN_CONFIG_DIR,
+        M4_ZEN_LOCAL_STORE_DIR,
     ]
     for path in runtime_dirs:
         path.mkdir(parents=True, exist_ok=True)

@@ -85,5 +85,11 @@
     "feature_importances_available": true
   },
   "uses_scaled_features": false,
-  "mlflow_artifact_log_errors": []
+  "mlflow_artifact_log_errors": [],
+  "figure_paths": {
+    "training_metrics": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 4 - Model Development and Evaluation\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_metrics.png",
+    "training_confusion_matrices": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 4 - Model Development and Evaluation\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_confusion_matrices.png",
+    "feature_importance": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 4 - Model Development and Evaluation\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\feature_importance.png",
+    "training_dashboard": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 4 - Model Development and Evaluation\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_dashboard.png"
+  }
 }

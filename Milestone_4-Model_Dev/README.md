@@ -1,60 +1,194 @@
 ## AI-Assisted Symbolic Optimization for Strategic Facility Network Design
-## Milestone 4: ML Pipeline Development - Model Training and Offline Evaluation
+## Milestone 4: Model Development and Offline Evaluation
 
 
 ## Table of Contents
 
+- [Quick Links](#quick-links)
 - [Overview](#overview)
-- [Technical Scope of the Milestone](#technical-scope-of-the-milestone)
 - [Project Context and Integration with Previous Milestones](#project-context-and-integration-with-previous-milestones)
-- [4.1 Project Structure Definition and Modularity](#41-project-structure-definition-and-modularity)
-- [4.2 Code Versioning](#42-code-versioning)
-- [4.3 Experiment Tracking and Model Versioning](#43-experiment-tracking-and-model-versioning)
-- [4.4 Integration of Model Training and Offline Evaluation into the ML Pipeline / MLOps Platform](#44-integration-of-model-training-and-offline-evaluation-into-the-ml-pipeline--mlops-platform)
-- [4.5 Energy Efficiency Measurement](#45-energy-efficiency-measurement)
-- [Technical Workflow and Execution](#technical-workflow-and-execution)
-- [Offline Evaluation Setup and Results](#offline-evaluation-setup-and-results)
-- [Produced Artifacts](#produced-artifacts)
-- [Conclusion](#conclusion)
+- [Project Structure and Main Files](#project-structure-and-main-files)
+- [4. Milestone 4 - ML Pipeline Development - Model Training and Offline Evaluation](#4-milestone-4---ml-pipeline-development---model-training-and-offline-evaluation)
+  - [4.1 Project Structure Definition and Modularity](#41-project-structure-definition-and-modularity)
+  - [4.2 Code Versioning](#42-code-versioning)
+  - [4.3 Experiment Tracking and Model Versioning](#43-experiment-tracking-and-model-versioning)
+  - [4.4 Integration of Model Training and Offline Evaluation into the ML Pipeline / MLOps Platform](#44-integration-of-model-training-and-offline-evaluation-into-the-ml-pipeline--mlops-platform)
+  - [4.5 Energy Efficiency Measurement](#45-energy-efficiency-measurement)
+- [Visual Outputs](#visual-outputs)
+- [Limitations and Next Steps](#limitations-and-next-steps)
+
+
+## Quick Links
+
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
+- **[Milestone 1 README](../Milestone_1-Project_Inception/README.md)**
+- **[Milestone 2 README](../Milestone_2-PoC/README.md)**
+- **[Milestone 3 README](../Milestone_3-Data_Prep/README.md)**
+- **[Main Training Pipeline](src/m4_model_dev/pipelines/training_pipeline.py)**
+- **[Model Comparison Pipeline](src/m4_model_dev/pipelines/comparison_pipeline.py)**
+- **[ZenML Pipeline](src/m4_model_dev/pipelines/zenml_pipeline.py)**
 
 
 ## Overview
 
-This milestone implements the model development and offline evaluation layer of the project.
+Milestone 4 introduces the model development and offline evaluation layer of the project. While the previous milestones established the business framing, solver logic, and data/MLOps foundation, this milestone adds a supervised machine learning workflow built on top of validated UFLP benchmark data and deterministic optimization outputs.
 
-Milestone 4 extends the workflow established in the previous milestones by introducing supervised machine learning models trained on solver-derived outcomes. The milestone uses the deterministic optimization outputs produced earlier in the project as labels and combines them with the validated feature layer created in Milestone 3.
+The implemented task is a facility-level binary classification problem. Each training example represents one `(instance_id, facility_id)` pair. The input is a vector of engineered numeric features derived from Milestone 3, and the target is a binary label `is_open`, indicating whether the facility is open in the deterministic optimal UFLP solution computed from the Milestone 2 baseline solver.
 
-The predictive task implemented in this milestone is a binary classification problem:
+This milestone does not replace the symbolic optimization system described in Milestone 1. Instead, it adds a complementary ML pipeline for offline experimentation, facility ranking, model comparison, and future hybrid optimization support.
 
-- input: facility-level and instance-level engineered features
-- output: a binary variable indicating whether a facility is open in the deterministic optimal UFLP solution
+The figures, screenshots, and diagrams referenced in the milestone documentation are available in the full report PDF:
 
-This predictive layer does not replace the symbolic optimization system. Instead, it provides an additional machine learning workflow for offline experimentation on solver-derived decisions and supports future work on facility screening, heuristic guidance, and scenario analysis.
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
 
 
-## Technical Scope of the Milestone
+## Project Context and Integration with Previous Milestones
 
-From a technical standpoint, this milestone focuses on making the model-development layer operational, repeatable, and testable.
+The project now consists of four connected layers:
 
-The implemented task is binary classification at the facility level:
+- **Milestone 1** defined the business problem, research framing, and the LLM-as-modeler architecture.
+- **Milestone 2** implemented the deterministic OR-Tools solver baseline and the LLM-generated verified solver pipeline.
+- **Milestone 3** implemented the data engineering and MLOps foundation, including ingestion, preprocessing, validation, feature engineering, DVC, and Feast.
+- **Milestone 4** implements supervised model training, offline evaluation, experiment tracking, model versioning, visualization, and ZenML pipeline orchestration.
 
-- input: one row per `(instance_id, facility_id)` with engineered numeric features
-- target: `is_open`
-  - `1` when the facility is open in the deterministic optimal UFLP solution
-  - `0` otherwise
+Milestone 4 depends directly on the outputs of the previous milestones:
 
-The implemented technical workflow includes:
+- raw OR-Library UFLP benchmark files remain the source dataset
+- Milestone 3 provides engineered facility-level and instance-level features
+- Milestone 2 provides deterministic optimal facility-opening decisions used as labels
+- Milestone 4 merges those assets into a supervised dataset, trains and compares models, logs runs in MLflow, orchestrates the workflow with ZenML, and tracks optional energy usage through CodeCarbon
 
-- facility-opening label generation from the deterministic baseline solver
-- merged training dataset generation
-- grouped train, validation, and test splitting by `instance_id`
-- configurable single-model training
-- multi-model comparison
-- offline evaluation with confusion counts and threshold selection
-- feature-importance export for tree-based models
-- MLflow tracking and local model registry
-- CodeCarbon energy tracking
-- ZenML pipeline integration
+
+## Project Structure and Main Files
+
+Milestone 4 is organized as a modular ML project.
+
+Main top-level folders:
+
+- [`configs`](configs) - YAML configuration files for training and model comparison
+- [`src/m4_model_dev`](src/m4_model_dev) - reusable source code
+- [`scripts`](scripts) - command-line entrypoints for training, comparison, tests, and ZenML runs
+- [`tests`](tests) - regression checks
+- [`data`](data) - generated labels, merged datasets, and split definitions
+- [`artifacts`](artifacts) - serialized trained models
+- [`reports`](reports) - summaries, metrics, comparisons, confusion reports, figure outputs, ZenML status, and energy reports
+- [`mlruns`](mlruns) and [`mlflow.db`](mlflow.db) - MLflow local tracking store and artifacts
+- [`.zen`](.zen) - ZenML local configuration
+
+Explanation of the most important code modules:
+
+- [`src/m4_model_dev/paths.py`](src/m4_model_dev/paths.py) - centralizes project paths and runtime directories
+- [`src/m4_model_dev/data/build_labels.py`](src/m4_model_dev/data/build_labels.py) - generates facility-open labels from the deterministic baseline solver
+- [`src/m4_model_dev/data/prepare_dataset.py`](src/m4_model_dev/data/prepare_dataset.py) - merges Milestone 3 features with Milestone 4 labels
+- [`src/m4_model_dev/data/make_splits.py`](src/m4_model_dev/data/make_splits.py) - builds grouped train, validation, and test splits by instance
+- [`src/m4_model_dev/models/logistic_numpy.py`](src/m4_model_dev/models/logistic_numpy.py) - custom NumPy logistic regression baseline
+- [`src/m4_model_dev/models/model_registry.py`](src/m4_model_dev/models/model_registry.py) - model factory, training, scoring, serialization, and feature importance extraction
+- [`src/m4_model_dev/evaluation/metrics.py`](src/m4_model_dev/evaluation/metrics.py) - computes classification metrics and confusion counts
+- [`src/m4_model_dev/reporting/training_reports.py`](src/m4_model_dev/reporting/training_reports.py) - writes summaries, manifests, metrics, and training reports
+- [`src/m4_model_dev/reporting/comparison_reports.py`](src/m4_model_dev/reporting/comparison_reports.py) - writes comparison summaries and selected-model outputs
+- [`src/m4_model_dev/reporting/figures.py`](src/m4_model_dev/reporting/figures.py) - generates PNG visualizations for training and comparison results
+- [`src/m4_model_dev/tracking/mlflow_utils.py`](src/m4_model_dev/tracking/mlflow_utils.py) - logs runs, metrics, artifacts, and registered models to MLflow
+- [`src/m4_model_dev/tracking/codecarbon_utils.py`](src/m4_model_dev/tracking/codecarbon_utils.py) - activates CodeCarbon tracking when configured
+- [`src/m4_model_dev/pipelines/training_pipeline.py`](src/m4_model_dev/pipelines/training_pipeline.py) - full local training and evaluation workflow
+- [`src/m4_model_dev/pipelines/comparison_pipeline.py`](src/m4_model_dev/pipelines/comparison_pipeline.py) - multi-model comparison workflow
+- [`src/m4_model_dev/pipelines/zenml_pipeline.py`](src/m4_model_dev/pipelines/zenml_pipeline.py) - ZenML pipeline definition with visible step orchestration
+
+Main runnable scripts:
+
+- [`scripts/run_train.py`](scripts/run_train.py)
+- [`scripts/run_compare.py`](scripts/run_compare.py)
+- [`scripts/run_tests.py`](scripts/run_tests.py)
+- [`scripts/run_zenml.py`](scripts/run_zenml.py)
+
+The repository structure figure and folder screenshots are included in:
+
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
+
+
+## 4. Milestone 4 - ML Pipeline Development - Model Training and Offline Evaluation
+
+### 4.1 Project Structure Definition and Modularity
+
+The milestone follows a modular structure aligned with the principles of Cookiecutter-style data science projects and lifecycle-oriented ML engineering. The implementation avoids a monolithic script and instead separates responsibilities across distinct modules:
+
+- data preparation
+- model definition
+- evaluation
+- reporting
+- tracking
+- orchestration
+- execution scripts
+- tests
+
+This modularity improves readability, reuse, maintainability, and experimentation. For example:
+
+- label generation is isolated in [`build_labels.py`](src/m4_model_dev/data/build_labels.py)
+- dataset construction is isolated in [`prepare_dataset.py`](src/m4_model_dev/data/prepare_dataset.py)
+- split logic is isolated in [`make_splits.py`](src/m4_model_dev/data/make_splits.py)
+- training orchestration is isolated in [`training_pipeline.py`](src/m4_model_dev/pipelines/training_pipeline.py)
+- visual output generation is isolated in [`figures.py`](src/m4_model_dev/reporting/figures.py)
+- experiment logging is isolated in [`mlflow_utils.py`](src/m4_model_dev/tracking/mlflow_utils.py)
+
+
+From an execution standpoint, Milestone 4 can be understood as a pipeline of reusable stages:
+
+1. generate facility labels from the deterministic solver
+2. merge labels with engineered features
+3. create grouped splits
+4. train the configured model
+5. evaluate offline on train, validation, and test
+6. write reports and PNG visualizations
+7. log experiments to MLflow
+8. optionally orchestrate all stages through ZenML
+
+
+### 4.2 Code Versioning
+
+Milestone 4 adopts a Git-based workflow compatible with GitHub Flow. The versioning process is documented in [`docs/versioning_and_delivery.md`](docs/versioning_and_delivery.md) and is designed around short-lived feature branches, local validation before merge, and controlled commit scope.
+
+The intended flow is:
+
+1. create a short-lived feature branch from the default branch
+2. implement one scoped change
+3. run the verification scripts locally
+4. commit only source code, configuration, and lightweight report files
+5. push the branch and open a pull request
+6. merge only after validation succeeds
+
+This workflow was also reflected in practice during implementation through branch-based milestone cleanup and structural refactoring. The purpose of this versioning discipline is to keep changes auditable and reduce the risk of mixing runtime artifacts with source code changes.
+
+Validation scripts used before merge include:
+
+- [`scripts/run_train.py`](scripts/run_train.py)
+- [`scripts/run_compare.py`](scripts/run_compare.py)
+- [`scripts/run_tests.py`](scripts/run_tests.py)
+- [`scripts/run_zenml.py`](scripts/run_zenml.py)
+
+
+
+### 4.3 Experiment Tracking and Model Versioning
+
+Milestone 4 integrates MLflow for experiment tracking and local model versioning.
+
+The MLflow integration is implemented in [`src/m4_model_dev/tracking/mlflow_utils.py`](src/m4_model_dev/tracking/mlflow_utils.py). It provides the following capabilities:
+
+- configuration of the local tracking URI
+- creation of experiments when missing
+- logging of run parameters
+- logging of split metrics
+- logging of supporting artifacts such as summaries and PNG figures
+- logging of sklearn model artifacts
+- registration of the selected model in a local model registry
+
+The local MLflow store consists of:
+
+- [`mlflow.db`](mlflow.db) - tracking database
+- [`mlruns/`](mlruns) - artifact storage
+
+Two main experiment types are logged:
+
+- single-model training runs
+- multi-model comparison runs
 
 The currently supported model families are:
 
@@ -64,280 +198,137 @@ The currently supported model families are:
 - `random_forest`
 - `hist_gradient_boosting`
 
-The current default training configuration targets `random_forest` through `configs/train_best_model.yaml`. Model selection is based on validation metrics only, while the test split is reserved for final offline evaluation.
-
-
-## Project Context and Integration with Previous Milestones
-
-The complete project now evolves across four connected milestone stages:
-
-- Milestone 1 defined the business case, research framing, and the LLM-as-modeler architecture for AI-assisted symbolic optimization.
-- Milestone 2 implemented the deterministic OR-Tools baseline and the LLM-generated verified solver workflow.
-- Milestone 3 implemented the data layer, including ingestion, preprocessing, feature engineering, validation, DVC reproducibility, and Feast integration.
-- Milestone 4 adds supervised model training, offline evaluation, experiment tracking, model versioning, and ML pipeline orchestration.
-
-In practical terms, Milestone 4 is built on the outputs of the earlier milestones as follows:
-
-- raw OR-Library benchmark instances are processed by the Milestone 3 data pipeline
-- deterministic facility decisions from Milestone 2 are used to generate supervised labels
-- Milestone 3 engineered features are merged with Milestone 4 labels
-- machine learning models are trained and evaluated using grouped train, validation, and test splits
-- MLflow and ZenML are used to track and orchestrate the model development workflow
-
-
-## 4.1 Project Structure Definition and Modularity
-
-Milestone 4 follows a modular project layout in order to separate configuration, reusable source code, generated data, reports, runnable scripts, and tests.
-
-The milestone is organized into the following components:
-
-- `configs`
-  - configuration files for training and model comparison
-- `src/m4_model_dev`
-  - reusable source modules for label generation, dataset preparation, split creation, model fitting, evaluation, tracking, and pipeline orchestration
-- `scripts`
-  - executable entrypoints for training, comparison, testing, and ZenML runs
-- `data`
-  - generated labels, merged datasets, and split definitions
-- `artifacts`
-  - saved trained model files
-- `reports`
-  - offline evaluation summaries, confusion reports, model selection outputs, ZenML status, and emissions reports
-- `tests`
-  - regression tests for selection rules and configuration consistency
-
-This modular layout keeps the workflow decomposed into distinct and reusable stages:
-
-- label construction
-- dataset preparation
-- split generation
-- model training
-- offline evaluation
-- experiment logging
-- pipeline orchestration
-
-
-## 4.2 Code Versioning
-
-Milestone 4 adopts a repository workflow aligned with Git and GitHub Flow.
-
-The implementation is structured so that milestone changes can be introduced through isolated code updates, validated locally, and then merged into the main project line after successful testing. The intended workflow is:
-
-1. create a branch for a modeling, tracking, or orchestration change
-2. implement the change in the milestone modules and configuration files
-3. rerun the milestone scripts and regression tests
-4. merge the validated change into the main branch
-
-This versioning approach supports:
-
-- controlled experimentation
-- traceability of training and evaluation updates
-- reproducible configuration changes
-- safer integration of new model families or tracking logic
-
-
-## 4.3 Experiment Tracking and Model Versioning
-
-Milestone 4 integrates MLflow for experiment tracking and local model versioning.
-
-MLflow is used to record:
-
-- run metadata
-- selected model family
-- configuration values
-- validation and test metrics
-- selected classification threshold
-- summary artifacts
-- registered model versions
-
-The implemented workflow supports both single-model training runs and multi-model comparison runs. The selected trained model is stored in the local registry under a stable registered model name:
+Model selection is based on validation metrics only, which prevents leakage from the test split into selection decisions. The current selected model is `random_forest`. The local registered model name is:
 
 - `m4-facility-opening-best`
 
-The models currently implemented in the milestone are:
+Latest local results:
 
-- dummy prior baseline
-- custom NumPy logistic regression
-- scikit-learn logistic regression
-- random forest
-- histogram-based gradient boosting
+- validation F1: `0.6349`
+- validation ROC-AUC: `0.8944`
+- test F1: `0.3571`
+- test ROC-AUC: `0.7849`
 
-This experiment-tracking layer makes it possible to:
+Milestone 4 also uses MLflow as a visualization layer. The local UI can be launched and inspected through the MLflow web interface at:
 
-- compare multiple runs consistently
-- retain local model history
-- register updated model versions
-- preserve a reproducible record of offline evaluation outputs
+- `http://127.0.0.1:5004`
 
+Within the MLflow UI, the following are visible:
 
-## 4.4 Integration of Model Training and Offline Evaluation into the ML Pipeline / MLOps Platform
+- experiment names
+- run parameters
+- metrics per split
+- artifact files
+- registered model versions
+- attached training and comparison figures
 
-Milestone 4 integrates the training and offline evaluation logic into a local MLOps workflow using ZenML.
+The MLflow screenshots used in the milestone documentation are included in:
 
-The pipeline orchestrates the following stages:
-
-1. generate or refresh facility-opening labels
-2. build the merged supervised dataset
-3. create grouped train, validation, and test splits
-4. fit the configured machine learning model
-5. select a classification threshold using validation results only
-6. evaluate the trained model on train, validation, and test splits
-7. write reports and artifacts
-8. log the run to MLflow
-
-This pipeline integration provides a single entrypoint for end-to-end model development and evaluation while preserving the modular internal structure of the milestone.
-
-The MLOps layer therefore includes:
-
-- configuration-driven training
-- repeatable offline evaluation
-- experiment logging
-- local model registration
-- local pipeline orchestration
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
 
 
-## 4.5 Energy Efficiency Measurement
+### 4.4 Integration of Model Training and Offline Evaluation into the ML Pipeline / MLOps Platform
 
-As an optional extension, Milestone 4 includes energy-efficiency tracking through CodeCarbon.
+Milestone 4 integrates the training and evaluation workflow into a local MLOps pipeline using ZenML.
 
-During training runs, CodeCarbon records estimated resource consumption and writes an emissions report. This adds an operational measurement layer alongside the standard predictive performance metrics.
+The ZenML integration is implemented in [`src/m4_model_dev/pipelines/zenml_pipeline.py`](src/m4_model_dev/pipelines/zenml_pipeline.py). Rather than wrapping the entire workflow in a single opaque step, the pipeline is split into visible stages:
 
-On the current local Windows environment, CPU measurement may rely on fallback estimation when direct hardware power measurement is unavailable. Even with this limitation, the milestone still produces a usable record of training-time energy estimates.
+- `load_config_step`
+- `prepare_data_step`
+- `train_model_step`
+- `evaluate_model_step`
+- `persist_outputs_step`
 
+This decomposition makes the pipeline easier to inspect and debug in the ZenML dashboard and aligns better with standard MLOps practice.
 
-## Technical Workflow and Execution
+The ZenML pipeline performs:
 
-The milestone includes runnable scripts for training, comparison, testing, and pipeline execution. This technical layer is important because the milestone is not limited to reporting model results; it also implements the operational workflow required to run, debug, and validate the model-development process.
+1. configuration loading
+2. label generation and dataset preparation
+3. split generation
+4. model fitting
+5. offline evaluation
+6. report writing
+7. MLflow logging
+8. artifact persistence
 
-Main execution entrypoints:
+ZenML status is also written locally in:
 
-- train the default selected model
-- train an alternative baseline configuration
-- compare all implemented model families
-- run regression tests for selection and configuration consistency
-- execute the ZenML pipeline
+- [`reports/zenml_status.txt`](reports/zenml_status.txt)
+- [`reports/zenml_status.json`](reports/zenml_status.json)
 
-Typical commands used during milestone execution are:
+The local ZenML dashboard is available at:
 
-```powershell
-& 'C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python3.13.exe' scripts\run_train.py
-```
+- `http://127.0.0.1:8238`
 
-```powershell
-& 'C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python3.13.exe' scripts\run_train.py configs\train_logreg.yaml
-```
+This UI provides visual access to pipeline runs and step execution. It complements MLflow by focusing on orchestration rather than experiment history.
 
-```powershell
-& 'C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python3.13.exe' scripts\run_compare.py
-```
+The logical execution flow of the project is therefore:
 
-```powershell
-& 'C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python3.13.exe' scripts\run_tests.py
-```
-
-```powershell
-& 'C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3312.0_x64__qbz5n2kfra8p0\python3.13.exe' scripts\run_zenml.py
-```
-
-The technical workflow also includes explicit debugging and validation support through:
-
-- regression tests for model ordering and configuration alignment
-- validation-only threshold selection
-- confusion-count reporting
-- MLflow run summaries and artifact logging
-- ZenML status reporting
-
-This makes the milestone suitable not only for reporting offline model results, but also for reproducing, debugging, and maintaining the training pipeline as a complete local workflow.
+- [`run_train.py`](scripts/run_train.py) -> [`training_pipeline.py`](src/m4_model_dev/pipelines/training_pipeline.py) -> data preparation -> model training -> evaluation -> reports -> MLflow
+- [`run_compare.py`](scripts/run_compare.py) -> [`comparison_pipeline.py`](src/m4_model_dev/pipelines/comparison_pipeline.py) -> shared training inputs -> train all candidate models -> rank on validation -> reports -> MLflow
+- [`run_zenml.py`](scripts/run_zenml.py) -> [`zenml_pipeline.py`](src/m4_model_dev/pipelines/zenml_pipeline.py) -> same workflow orchestrated as explicit ZenML steps
 
 
-## Offline Evaluation Setup and Results
+The ZenML dashboard screenshots and runtime diagrams are included in:
 
-The dataset is split by grouped benchmark instances rather than by random row-level shuffling. This design reduces leakage across facilities that belong to the same UFLP instance and keeps evaluation aligned with the structure of the benchmark collection.
-
-The offline evaluation workflow uses:
-
-- train split for model fitting
-- validation split for threshold selection and model comparison
-- test split for final held-out reporting
-
-The reported offline metrics include:
-
-- accuracy
-- precision
-- recall
-- F1 score
-- ROC-AUC
-- log loss
-
-Model comparison ranks candidates using validation performance only. Based on the current repository outputs, the selected model is the random forest classifier.
-
-Latest selected-model results:
-
-- validation F1: 0.6349
-- validation ROC-AUC: 0.8944
-- test F1: 0.3571
-- test ROC-AUC: 0.7849
-
-These values should be interpreted as offline benchmark results on solver-derived labels rather than as a replacement for the deterministic optimization solution itself.
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
 
 
-## Produced Artifacts
+### 4.5 Energy Efficiency Measurement
 
-Milestone 4 produces the following main artifact families.
+As an optional bonus feature, Milestone 4 integrates CodeCarbon for energy-efficiency measurement during model training.
 
-Data outputs:
+The integration is activated from the training workflow through [`src/m4_model_dev/tracking/codecarbon_utils.py`](src/m4_model_dev/tracking/codecarbon_utils.py). When enabled in configuration, the pipeline starts a CodeCarbon tracker before model fitting and stops it after training.
 
-- facility-opening labels
-- merged supervised dataset
-- grouped split definitions
+The output is written to:
 
-Model outputs:
+- [`reports/emissions.csv`](reports/emissions.csv)
 
-- trained model artifact for the selected model
-- feature importance report when supported by the model
+The report contains estimated energy consumption statistics for CPU, RAM, and GPU activity during training.
 
-Evaluation outputs:
+This milestone also benefits from the CodeCarbon console output during execution, which helps validate that tracking is active. On the local Windows environment, CodeCarbon may fall back to CPU estimation mode when direct power measurement tools are unavailable. This is an implementation limitation of the environment rather than of the pipeline itself.
 
-- metrics report
-- training summary
-- confusion report
-- model comparison summary
-- model selection summary
+The CodeCarbon screenshots included in the documentation are available in:
 
-Tracking and orchestration outputs:
-
-- MLflow run history and local model registry entries
-- ZenML pipeline status report
-- CodeCarbon emissions report
-
-Additional repository outputs used during execution and debugging include:
-
-- `mlruns`
-- `mlflow.db`
-- `data/labels`
-- `data/merged`
-- `data/splits`
-- `artifacts`
-- `reports`
+- **[Milestone 4 Report (PDF)](report/report.pdf)**
 
 
-## Conclusion
+## Visual Outputs
 
-Milestone 4 extends the project from symbolic optimization and validated data preparation into supervised model development and offline evaluation.
+Milestone 4 generates visible PNG outputs automatically whenever the training or comparison workflows are executed.
 
-The milestone satisfies the core implementation requirements through:
+Training visual outputs:
 
-- modular project structure
-- versioning workflow aligned with Git and GitHub Flow
-- MLflow-based experiment tracking and model versioning
-- ZenML-based pipeline orchestration
-- optional energy-efficiency reporting with CodeCarbon
+- [`reports/training_metrics.png`](reports/training_metrics.png)
+- [`reports/training_confusion_matrices.png`](reports/training_confusion_matrices.png)
+- [`reports/feature_importance.png`](reports/feature_importance.png)
+- [`reports/training_dashboard.png`](reports/training_dashboard.png)
 
-As a result, the project now includes four connected layers:
+Comparison visual outputs:
 
-- problem framing and research positioning
-- deterministic and LLM-assisted solver workflows
-- validated and reproducible data preparation
-- supervised model training, experiment tracking, and pipeline orchestration
+- [`reports/comparison_validation_metrics.png`](reports/comparison_validation_metrics.png)
+- [`reports/comparison_test_metrics.png`](reports/comparison_test_metrics.png)
+- [`reports/comparison_dashboard.png`](reports/comparison_dashboard.png)
 
-This establishes a complete local benchmark workflow for future experimentation at the intersection of symbolic optimization, data engineering, and MLOps.
+These figures are also logged as MLflow artifacts during tracked runs.
+
+
+## Limitations and Next Steps
+
+Current limitations:
+
+- the predictive model is an auxiliary supervised layer and does not replace the symbolic solver
+- the benchmark remains relatively small, with only 15 UFLP instances
+- ZenML on Windows still produces environment-specific warnings, including the default pickle materializer warning for the custom scaler object
+- CodeCarbon CPU measurement may use fallback estimation on the local machine
+- the ML workflow currently focuses on tabular supervised models and does not include LLM fine-tuning
+
+Possible future work:
+
+- add more model families or tuning strategies
+- integrate richer hyperparameter search
+- add custom ZenML materializers for cleaner artifact handling
+- extend the ML layer toward solver warm-starting or candidate facility screening
+- connect the ML layer more explicitly to the LLM-generated modeling pipeline from Milestone 2
+- package the milestone outputs more tightly for cloud or CI execution

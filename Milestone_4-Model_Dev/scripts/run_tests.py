@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import sys
 import unittest
-from pathlib import Path
+
+from _bootstrap import ensure_src_path
 
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-M4_ROOT = SCRIPT_DIR.parent
-SRC_DIR = M4_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+M4_ROOT = ensure_src_path()
 
 
 if __name__ == "__main__":

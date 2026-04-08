@@ -28,24 +28,48 @@ SUPPORTED_MODEL_NAMES = SKLEARN_MODEL_NAMES | {"logreg_numpy"}
 
 
 def balanced_sample_weight(y: np.ndarray) -> np.ndarray:
-    counts = np.bincount(y.astype(int), minlength=2)
+    y_int = y.astype(int)
+    counts = np.bincount(y_int, minlength=2)
     total = float(len(y))
     weights = np.ones(len(y), dtype=float)
     for cls in (0, 1):
         if counts[cls] > 0:
-            weights[y.astype(int) == cls] = total / (2.0 * counts[cls])
+            weights[y_int == cls] = total / (2.0 * counts[cls])
     return weights
 
 
-def make_numpy_training_config(config: dict[str, Any]) -> LogisticTrainingConfig:
-    training = config.get("training", {})
+def build_model_training_config(config: dict[str, Any], model_name: str) -> dict[str, Any]:
+    training_config = dict(config.get("training", {}))
+    model_specific_config = config.get("comparison", {}).get(model_name, {})
+    if isinstance(model_specific_config, dict):
+        training_config.update(model_specific_config)
+    return training_config
+
+
+def _build_bundle(
+    model_name: str,
+    model: Any,
+    uses_scaled_features: bool,
+    scaler: StandardScaler | None,
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "model_name": model_name,
+        "model": model,
+        "uses_scaled_features": uses_scaled_features,
+        "scaler": scaler,
+        "metadata": metadata,
+    }
+
+
+def make_numpy_training_config(training_config: dict[str, Any]) -> LogisticTrainingConfig:
     return LogisticTrainingConfig(
-        learning_rate=float(training.get("learning_rate", 0.05)),
-        epochs=int(training.get("epochs", 3000)),
-        l2_strength=float(training.get("l2_strength", 0.001)),
-        beta1=float(training.get("beta1", 0.9)),
-        beta2=float(training.get("beta2", 0.999)),
-        epsilon=float(training.get("epsilon", 1e-8)),
+        learning_rate=float(training_config.get("learning_rate", 0.05)),
+        epochs=int(training_config.get("epochs", 3000)),
+        l2_strength=float(training_config.get("l2_strength", 0.001)),
+        beta1=float(training_config.get("beta1", 0.9)),
+        beta2=float(training_config.get("beta2", 0.999)),
+        epsilon=float(training_config.get("epsilon", 1e-8)),
     )
 
 
@@ -59,21 +83,12 @@ def fit_model_bundle(
     random_seed: int,
 ) -> dict[str, Any]:
     metadata: dict[str, Any] = {"model_name": model_name}
-    training_config = dict(config.get("training", {}))
-    model_specific_config = config.get("comparison", {}).get(model_name, {})
-    if isinstance(model_specific_config, dict):
-        training_config.update(model_specific_config)
+    training_config = build_model_training_config(config, model_name)
 
     if model_name == "dummy_prior":
         model = DummyClassifier(strategy="prior")
         model.fit(x_train_raw, y_train)
-        return {
-            "model_name": model_name,
-            "model": model,
-            "uses_scaled_features": False,
-            "scaler": None,
-            "metadata": metadata,
-        }
+        return _build_bundle(model_name, model, False, None, metadata)
 
     if model_name == "logreg_sklearn":
         model = LogisticRegression(
@@ -82,13 +97,7 @@ def fit_model_bundle(
             random_state=random_seed,
         )
         model.fit(x_train_scaled, y_train)
-        return {
-            "model_name": model_name,
-            "model": model,
-            "uses_scaled_features": True,
-            "scaler": scaler,
-            "metadata": metadata,
-        }
+        return _build_bundle(model_name, model, True, scaler, metadata)
 
     if model_name == "random_forest":
         model = RandomForestClassifier(
@@ -104,13 +113,7 @@ def fit_model_bundle(
         )
         model.fit(x_train_raw, y_train)
         metadata["feature_importances_available"] = True
-        return {
-            "model_name": model_name,
-            "model": model,
-            "uses_scaled_features": False,
-            "scaler": None,
-            "metadata": metadata,
-        }
+        return _build_bundle(model_name, model, False, None, metadata)
 
     if model_name == "hist_gradient_boosting":
         model = HistGradientBoostingClassifier(
@@ -127,26 +130,14 @@ def fit_model_bundle(
         )
         model.fit(x_train_raw, y_train, sample_weight=balanced_sample_weight(y_train))
         metadata["early_stopping"] = bool(training_config.get("early_stopping", False))
-        return {
-            "model_name": model_name,
-            "model": model,
-            "uses_scaled_features": False,
-            "scaler": None,
-            "metadata": metadata,
-        }
+        return _build_bundle(model_name, model, False, None, metadata)
 
     if model_name == "logreg_numpy":
-        training_cfg = make_numpy_training_config(config)
+        training_cfg = make_numpy_training_config(training_config)
         model = NumpyLogisticRegression(training_cfg).fit(x_train_scaled, y_train.astype(float))
         metadata["loss_final"] = model.loss_history_[-1] if model.loss_history_ else None
         metadata["training_config"] = asdict(training_cfg)
-        return {
-            "model_name": model_name,
-            "model": model,
-            "uses_scaled_features": True,
-            "scaler": scaler,
-            "metadata": metadata,
-        }
+        return _build_bundle(model_name, model, True, scaler, metadata)
 
     raise ValueError(f"Unsupported model family: {model_name}")
 

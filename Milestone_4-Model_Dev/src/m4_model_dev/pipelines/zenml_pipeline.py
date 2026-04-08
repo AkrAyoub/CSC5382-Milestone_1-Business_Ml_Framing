@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from m4_model_dev.paths import M4_REPORTS_DIR, M4_ROOT
+from m4_model_dev.paths import M4_REPORTS_DIR, M4_ROOT, M4_ZEN_CONFIG_DIR, M4_ZEN_LOCAL_STORE_DIR
 from m4_model_dev.pipelines.training_pipeline import (
     evaluate_model_bundle,
     load_training_config,
@@ -73,6 +73,9 @@ if step is not None:
 
     @step(enable_cache=False)
     def prepare_data_step(config: dict[str, Any]) -> dict[str, Any]:
+        # ZenML validates step I/O with isinstance checks, so the step boundary
+        # stays on plain dictionaries even though the core pipeline uses richer
+        # typed contracts internally.
         return prepare_training_inputs(config)
 
     @step(enable_cache=False)
@@ -173,20 +176,24 @@ def _write_zenml_status(success: bool, config_path: Path | None, details: str) -
     return payload
 
 
-def run_zenml_training_pipeline(config_path: Path | None = None):
-    zen_root = M4_ROOT / ".zen"
-    zen_root.mkdir(parents=True, exist_ok=True)
-    # Keep the local store path short on Windows to avoid step artifact paths
-    # exceeding filesystem limits during multi-step materialization.
-    local_store_root = M4_ROOT.parent.parent / ".zen_local"
-    local_store_root.mkdir(parents=True, exist_ok=True)
-    os.environ.setdefault("ZENML_CONFIG_PATH", str(zen_root))
-    os.environ.setdefault("ZENML_LOCAL_STORES_PATH", str(local_store_root))
+def _configure_zenml_runtime() -> None:
+    ensure_paths = [M4_ZEN_CONFIG_DIR, M4_ZEN_LOCAL_STORE_DIR]
+    for path in ensure_paths:
+        path.mkdir(parents=True, exist_ok=True)
+
+    os.environ.setdefault("ZENML_CONFIG_PATH", str(M4_ZEN_CONFIG_DIR))
+    os.environ.setdefault("ZENML_LOCAL_STORES_PATH", str(M4_ZEN_LOCAL_STORE_DIR))
     os.environ.setdefault("ZENML_DEFAULT_USER_NAME", "default")
     os.environ.setdefault("ZENML_DEFAULT_USER_PASSWORD", "default")
     os.environ.setdefault("ZENML_DISABLE_INTERACTIVE_INPUT", "true")
     os.environ.setdefault("ZENML_DISABLE_PIPELINE_LOGS_STORAGE", "true")
     os.environ.setdefault("ZENML_DISABLE_STEP_LOGS_STORAGE", "true")
+
+
+def run_zenml_training_pipeline(config_path: Path | None = None):
+    # Keep the local store path short on Windows to avoid deep artifact paths
+    # exceeding filesystem limits during multi-step materialization.
+    _configure_zenml_runtime()
 
     if pipeline is None or step is None:
         message = "ZenML is not installed. Install the milestone 4 requirements to run the pipeline."
