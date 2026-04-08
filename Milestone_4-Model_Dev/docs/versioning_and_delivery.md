@@ -2,11 +2,11 @@
 
 Milestone 4 uses the repository Git history and a branch-based workflow compatible with GitHub Flow:
 
-1. Create a short-lived branch from `main`
+1. Create a short-lived branch from the default branch (`main` or `master`)
 2. Implement one scoped change set
 3. Re-run the Milestone 4 scripts before opening a pull request
 4. Commit source code, configs, and lightweight reports
-5. Open a pull request into `main`
+5. Open a pull request into the default branch
 6. Merge only after the milestone outputs are refreshed
 
 Suggested branch names:

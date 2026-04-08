@@ -25,41 +25,25 @@ from m4_model_dev.paths import (
     M4_REPORTS_DIR,
     ensure_runtime_dirs,
 )
+from m4_model_dev.pipelines.contracts import (
+    EvaluationResults,
+    TrainedModel,
+    TrainingInputs,
+    TrainingPipelineResult,
+)
+from m4_model_dev.reporting.figures import write_training_figures
+from m4_model_dev.reporting.training_reports import (
+    build_confusion_report,
+    build_run_manifest,
+    render_training_summary,
+    write_summary,
+    write_training_reports,
+)
+from m4_model_dev.tracking.codecarbon_utils import maybe_start_codecarbon
 from m4_model_dev.tracking.mlflow_utils import log_training_run
 from m4_model_dev.utils.config import load_yaml_config
-from m4_model_dev.utils.io import write_dataframe, write_json, write_text
-
-
-IDENTIFIER_COLUMNS = {
-    "facility_key",
-    "instance_id",
-    "event_timestamp",
-    "split",
-}
-
-LABEL_COLUMNS = {
-    "is_open",
-    "open_facility_count",
-    "objective",
-    "best_known",
-    "gap_percent",
-    "runtime_s",
-}
-
-
-def _maybe_start_codecarbon(enable: bool):
-    if not enable:
-        return None
-    try:
-        from codecarbon import EmissionsTracker
-    except ImportError:
-        return None
-    return EmissionsTracker(
-        project_name="m4-facility-opening",
-        output_dir=str(M4_REPORTS_DIR),
-        output_file="emissions.csv",
-        save_to_file=True,
-    )
+IDENTIFIER_COLUMNS = {"facility_key", "instance_id", "event_timestamp", "split"}
+LABEL_COLUMNS = {"is_open", "open_facility_count", "objective", "best_known", "gap_percent", "runtime_s"}
 
 
 def select_threshold(
@@ -124,7 +108,7 @@ def load_training_config(config_path: Path | None = None) -> tuple[Path, dict[st
     return resolved_path, config
 
 
-def prepare_training_inputs(config: dict[str, Any]) -> dict[str, Any]:
+def prepare_training_inputs(config: dict[str, Any]) -> TrainingInputs:
     labels_path, dataset_path, split_path, merged_df, feature_columns = _build_runtime_dataset(config)
 
     train_df = merged_df[merged_df["split"] == "train"].copy()
@@ -160,10 +144,14 @@ def prepare_training_inputs(config: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def train_model_bundle(config: dict[str, Any], training_inputs: dict[str, Any]) -> dict[str, Any]:
+def train_model_bundle(config: dict[str, Any], training_inputs: TrainingInputs) -> TrainedModel:
     model_family = str(config.get("model_family", "logreg_numpy"))
     random_seed = int(config.get("random_seed", 42))
-    tracker = _maybe_start_codecarbon(config.get("tracking", {}).get("enable_codecarbon", False))
+    tracker = maybe_start_codecarbon(
+        config.get("tracking", {}).get("enable_codecarbon", False),
+        output_dir=M4_REPORTS_DIR,
+        output_file="emissions.csv",
+    )
     if tracker is not None:
         tracker.start()
 
@@ -191,9 +179,9 @@ def train_model_bundle(config: dict[str, Any], training_inputs: dict[str, Any]) 
 
 def evaluate_model_bundle(
     config: dict[str, Any],
-    training_inputs: dict[str, Any],
-    trained_model: dict[str, Any],
-) -> dict[str, Any]:
+    training_inputs: TrainingInputs,
+    trained_model: TrainedModel,
+) -> EvaluationResults:
     bundle = trained_model["bundle"]
     train_scores = predict_scores(bundle, training_inputs["x_train_raw"], training_inputs["x_train_scaled"])
     val_scores = predict_scores(bundle, training_inputs["x_val_raw"], training_inputs["x_val_scaled"])
@@ -206,13 +194,7 @@ def evaluate_model_bundle(
         "val": val_report,
         "test": binary_classification_report(training_inputs["y_test"].tolist(), test_scores, best_threshold),
     }
-    confusion_report = {
-        split_name: {
-            key: split_metrics[key]
-            for key in ("tp", "fp", "tn", "fn", "threshold", "support")
-        }
-        for split_name, split_metrics in metrics.items()
-    }
+    confusion_report = build_confusion_report(metrics)
     feature_importance_rows = extract_feature_importance(bundle, training_inputs["feature_columns"])
 
     return {
@@ -226,10 +208,10 @@ def evaluate_model_bundle(
 def persist_training_outputs(
     config: dict[str, Any],
     config_path: Path,
-    training_inputs: dict[str, Any],
-    trained_model: dict[str, Any],
-    evaluation_results: dict[str, Any],
-) -> dict[str, Any]:
+    training_inputs: TrainingInputs,
+    trained_model: TrainedModel,
+    evaluation_results: EvaluationResults,
+) -> TrainingPipelineResult:
     bundle = trained_model["bundle"]
     emissions_path = trained_model.get("emissions_path")
     threshold = float(evaluation_results["threshold"])
@@ -242,30 +224,41 @@ def persist_training_outputs(
     manifest_path = M4_REPORTS_DIR / "run_manifest.json"
     confusion_path = M4_REPORTS_DIR / "confusion_report.json"
     feature_importance_path = M4_REPORTS_DIR / "feature_importance.csv"
+    figure_paths = write_training_figures(
+        metrics=metrics,
+        feature_importance_rows=evaluation_results["feature_importance_rows"],
+        model_family=trained_model["model_family"],
+        threshold=threshold,
+        output_dir=M4_REPORTS_DIR,
+    )
 
-    write_json(metrics, metrics_path)
-    write_json(evaluation_results["confusion_report"], confusion_path)
-    if evaluation_results["feature_importance_rows"]:
-        write_dataframe(pd.DataFrame(evaluation_results["feature_importance_rows"]), feature_importance_path)
+    run_manifest = build_run_manifest(
+        config_path=config_path,
+        labels_path=training_inputs["labels_path"],
+        dataset_path=training_inputs["dataset_path"],
+        merged_dataset_path=training_inputs["merged_dataset_path"],
+        split_path=training_inputs["split_path"],
+        model_family=trained_model["model_family"],
+        model_artifact_path=model_artifact_path,
+        feature_columns=feature_columns,
+        threshold=threshold,
+        metrics=metrics,
+        metadata=bundle.get("metadata", {}),
+        uses_scaled_features=bundle.get("uses_scaled_features", False),
+    )
+    run_manifest["figure_paths"] = {name: str(path) for name, path in figure_paths.items()}
+    write_training_reports(
+        metrics=metrics,
+        confusion_report=evaluation_results["confusion_report"],
+        feature_importance_rows=evaluation_results["feature_importance_rows"],
+        run_manifest=run_manifest,
+        metrics_path=metrics_path,
+        confusion_path=confusion_path,
+        manifest_path=manifest_path,
+        feature_importance_path=feature_importance_path,
+    )
 
-    run_manifest = {
-        "config_path": str(config_path),
-        "labels_path": str(training_inputs["labels_path"]),
-        "dataset_path": str(training_inputs["dataset_path"]),
-        "merged_dataset_path": str(training_inputs["merged_dataset_path"]),
-        "split_path": str(training_inputs["split_path"]),
-        "model_family": trained_model["model_family"],
-        "model_artifact_path": str(model_artifact_path),
-        "feature_columns": feature_columns,
-        "selected_threshold": threshold,
-        "metrics": metrics,
-        "metadata": bundle.get("metadata", {}),
-        "uses_scaled_features": bundle.get("uses_scaled_features", False),
-        "mlflow_artifact_log_errors": [],
-    }
-    write_json(run_manifest, manifest_path)
-
-    pre_mlflow_summary = render_summary(
+    pre_mlflow_summary = render_training_summary(
         config=config,
         feature_columns=feature_columns,
         threshold=threshold,
@@ -277,9 +270,11 @@ def persist_training_outputs(
         registered_model_name=None,
         artifact_log_errors=[],
     )
-    write_text(pre_mlflow_summary, summary_path)
+    write_summary(pre_mlflow_summary, summary_path)
 
-    artifacts_for_mlflow = [metrics_path, summary_path]
+    artifacts_for_mlflow = [metrics_path, summary_path, confusion_path, manifest_path, *figure_paths.values()]
+    if feature_importance_path.exists():
+        artifacts_for_mlflow.append(feature_importance_path)
     mlflow_result = log_training_run(
         config=config,
         metrics=metrics,
@@ -292,9 +287,18 @@ def persist_training_outputs(
         registered_model_name=str(config.get("tracking", {}).get("registered_model_name", "")) or None,
     )
     run_manifest["mlflow_artifact_log_errors"] = mlflow_result.get("artifact_log_errors", [])
-    write_json(run_manifest, manifest_path)
+    write_training_reports(
+        metrics=metrics,
+        confusion_report=evaluation_results["confusion_report"],
+        feature_importance_rows=evaluation_results["feature_importance_rows"],
+        run_manifest=run_manifest,
+        metrics_path=metrics_path,
+        confusion_path=confusion_path,
+        manifest_path=manifest_path,
+        feature_importance_path=feature_importance_path,
+    )
 
-    summary_text = render_summary(
+    summary_text = render_training_summary(
         config=config,
         feature_columns=feature_columns,
         threshold=threshold,
@@ -306,7 +310,7 @@ def persist_training_outputs(
         registered_model_name=mlflow_result.get("registered_model_name"),
         artifact_log_errors=mlflow_result.get("artifact_log_errors", []),
     )
-    write_text(summary_text, summary_path)
+    write_summary(summary_text, summary_path)
 
     return {
         "config": config,
@@ -320,6 +324,7 @@ def persist_training_outputs(
         "feature_importance_path": feature_importance_path if evaluation_results["feature_importance_rows"] else None,
         "emissions_path": emissions_path,
         "model_artifact_path": model_artifact_path,
+        "figure_paths": figure_paths,
         "mlflow_logged": bool(mlflow_result["mlflow_logged"]),
         "registered_model_name": mlflow_result.get("registered_model_name"),
         "metrics": metrics,
@@ -330,59 +335,7 @@ def persist_training_outputs(
     }
 
 
-def _render_split_metrics(split_name: str, split_metrics: dict[str, float | int]) -> str:
-    return (
-        f"{split_name}: "
-        f"accuracy={split_metrics['accuracy']:.4f}, "
-        f"precision={split_metrics['precision']:.4f}, "
-        f"recall={split_metrics['recall']:.4f}, "
-        f"f1={split_metrics['f1']:.4f}, "
-        f"roc_auc={split_metrics['roc_auc']:.4f}, "
-        f"log_loss={split_metrics['log_loss']:.4f}, "
-        f"tp={split_metrics['tp']}, fp={split_metrics['fp']}, "
-        f"tn={split_metrics['tn']}, fn={split_metrics['fn']}"
-    )
-
-
-def render_summary(
-    config: dict[str, Any],
-    feature_columns: list[str],
-    threshold: float,
-    metrics: dict[str, dict[str, float | int]],
-    split_counts: dict[str, int],
-    model_artifact_path: Path,
-    emissions_path: Path | None,
-    mlflow_logged: bool,
-    registered_model_name: str | None,
-    artifact_log_errors: list[str],
-) -> str:
-    model_family = str(config.get("model_family", "logreg_numpy"))
-    lines = [
-        "Milestone 4 training summary",
-        f"run_name: {config.get('run_name', 'm4-run')}",
-        f"model_family: {model_family}",
-        f"feature_count: {len(feature_columns)}",
-        f"selected_threshold: {threshold:.2f}",
-        f"model_artifact_path: {model_artifact_path}",
-        f"mlflow_logged: {mlflow_logged}",
-        f"registered_model_name: {registered_model_name or 'none'}",
-        f"codecarbon_emissions_logged: {bool(emissions_path and emissions_path.exists())}",
-        f"mlflow_artifact_copy_warnings: {len(artifact_log_errors)}",
-        "split_counts:",
-    ]
-    for split_name, count in split_counts.items():
-        lines.append(f"  - {split_name}: {count}")
-    lines.append("metrics:")
-    for split_name, split_metrics in metrics.items():
-        lines.append(f"  - {_render_split_metrics(split_name, split_metrics)}")
-    if artifact_log_errors:
-        lines.append("mlflow_artifact_copy_errors:")
-        for error in artifact_log_errors:
-            lines.append(f"  - {error}")
-    return "\n".join(lines) + "\n"
-
-
-def run_training_pipeline(config_path: Path | None = None) -> dict[str, Any]:
+def run_training_pipeline(config_path: Path | None = None) -> TrainingPipelineResult:
     config_path, config = load_training_config(config_path)
     training_inputs = prepare_training_inputs(config)
     trained_model = train_model_bundle(config, training_inputs)

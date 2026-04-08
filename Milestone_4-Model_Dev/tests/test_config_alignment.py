@@ -2,14 +2,11 @@ from __future__ import annotations
 
 import sys
 import unittest
-from pathlib import Path
+
+from _bootstrap import ensure_src_path
 
 
-TESTS_DIR = Path(__file__).resolve().parent
-M4_ROOT = TESTS_DIR.parent
-SRC_DIR = M4_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+M4_ROOT = ensure_src_path()
 
 from m4_model_dev.utils.config import load_yaml_config
 

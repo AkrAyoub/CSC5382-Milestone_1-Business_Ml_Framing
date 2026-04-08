@@ -65,6 +65,90 @@ def _ensure_run_artifact_dir(mlflow) -> None:
     (artifact_path / "supporting_artifacts").mkdir(parents=True, exist_ok=True)
 
 
+def _tracking_enabled(config: dict[str, Any]) -> bool:
+    return bool(config.get("tracking", {}).get("enable_mlflow", False))
+
+
+def _log_training_params(
+    mlflow,
+    config: dict[str, Any],
+    config_path: Path,
+    model_name: str,
+    feature_columns: list[str],
+    threshold: float,
+) -> None:
+    mlflow.log_param("config_path", str(config_path))
+    mlflow.log_param("model_family", model_name)
+    mlflow.log_param("feature_set", config.get("feature_set", "facility_plus_instance"))
+    mlflow.log_param("feature_count", len(feature_columns))
+    mlflow.log_param("selected_threshold", threshold)
+    for name, value in config.get("training", {}).items():
+        if isinstance(value, list):
+            continue
+        mlflow.log_param(name, value)
+
+
+def _log_split_metrics(mlflow, metrics: dict[str, dict[str, float | int]]) -> None:
+    for split_name, split_metrics in metrics.items():
+        for metric_name, metric_value in split_metrics.items():
+            if isinstance(metric_value, (int, float)):
+                mlflow.log_metric(f"{split_name}_{metric_name}", float(metric_value))
+
+
+def _log_supporting_artifacts(mlflow, artifacts: list[Path]) -> list[str]:
+    artifact_log_errors: list[str] = []
+    for artifact in artifacts:
+        if not artifact.exists():
+            continue
+        try:
+            mlflow.log_artifact(str(artifact), artifact_path="supporting_artifacts")
+        except Exception as exc:
+            try:
+                # Fall back to the run root on Windows when nested local file
+                # artifact paths are rejected by the local store backend.
+                mlflow.log_artifact(str(artifact))
+            except Exception as fallback_exc:
+                artifact_log_errors.append(f"{artifact.name}: {fallback_exc}")
+    return artifact_log_errors
+
+
+def _log_sklearn_bundle(
+    mlflow,
+    bundle: dict[str, Any],
+    feature_columns: list[str],
+    threshold: float,
+    register_model: bool,
+    registered_model_name: str | None,
+) -> str | None:
+    import mlflow.sklearn
+
+    active_registered_model_name = registered_model_name
+    mlflow.sklearn.log_model(
+        sk_model=bundle["model"],
+        name="model",
+        registered_model_name=active_registered_model_name if register_model else None,
+    )
+    mlflow.log_dict(
+        {
+            "feature_columns": feature_columns,
+            "threshold": threshold,
+            "uses_scaled_features": bundle.get("uses_scaled_features", False),
+        },
+        "model/model_metadata.json",
+    )
+    if bundle.get("uses_scaled_features", False) and bundle.get("scaler") is not None:
+        mlflow.log_dict(
+            {
+                "scaler_mean": bundle["scaler"].mean_.tolist(),
+                "scaler_scale": bundle["scaler"].scale_.tolist(),
+            },
+            "model/scaler.json",
+        )
+    if register_model and active_registered_model_name is None:
+        active_registered_model_name = "registered-sklearn-model"
+    return active_registered_model_name
+
+
 def log_training_run(
     config: dict[str, Any],
     metrics: dict[str, dict[str, float | int]],
@@ -76,7 +160,7 @@ def log_training_run(
     register_model: bool,
     registered_model_name: str | None,
 ) -> dict[str, Any]:
-    if not config.get("tracking", {}).get("enable_mlflow", False):
+    if not _tracking_enabled(config):
         return {"mlflow_logged": False, "registered_model_name": None, "artifact_log_errors": []}
 
     try:
@@ -90,57 +174,21 @@ def log_training_run(
     model_name = bundle["model_name"]
     active_registered_model_name = registered_model_name
 
-    artifact_log_errors: list[str] = []
     with mlflow.start_run(run_name=run_name, experiment_id=experiment_id):
         _ensure_run_artifact_dir(mlflow)
-        mlflow.log_param("config_path", str(config_path))
-        mlflow.log_param("model_family", model_name)
-        mlflow.log_param("feature_set", config.get("feature_set", "facility_plus_instance"))
-        mlflow.log_param("feature_count", len(feature_columns))
-        mlflow.log_param("selected_threshold", threshold)
-        for name, value in config.get("training", {}).items():
-            if isinstance(value, list):
-                continue
-            mlflow.log_param(name, value)
-
-        for split_name, split_metrics in metrics.items():
-            for metric_name, metric_value in split_metrics.items():
-                if isinstance(metric_value, (int, float)):
-                    mlflow.log_metric(f"{split_name}_{metric_name}", float(metric_value))
+        _log_training_params(mlflow, config, config_path, model_name, feature_columns, threshold)
+        _log_split_metrics(mlflow, metrics)
 
         if model_name in SKLEARN_MODEL_NAMES:
-            import mlflow.sklearn
-
-            mlflow.sklearn.log_model(
-                sk_model=bundle["model"],
-                name="model",
-                registered_model_name=active_registered_model_name if register_model else None,
+            active_registered_model_name = _log_sklearn_bundle(
+                mlflow=mlflow,
+                bundle=bundle,
+                feature_columns=feature_columns,
+                threshold=threshold,
+                register_model=register_model,
+                registered_model_name=active_registered_model_name,
             )
-            mlflow.log_dict(
-                {
-                    "feature_columns": feature_columns,
-                    "threshold": threshold,
-                    "uses_scaled_features": bundle.get("uses_scaled_features", False),
-                },
-                "model/model_metadata.json",
-            )
-            if bundle.get("uses_scaled_features", False) and bundle.get("scaler") is not None:
-                mlflow.log_dict(
-                    {
-                        "scaler_mean": bundle["scaler"].mean_.tolist(),
-                        "scaler_scale": bundle["scaler"].scale_.tolist(),
-                    },
-                    "model/scaler.json",
-                )
-            if register_model and active_registered_model_name is None:
-                active_registered_model_name = "registered-sklearn-model"
-
-        for artifact in artifacts:
-            if artifact.exists():
-                try:
-                    mlflow.log_artifact(str(artifact), artifact_path="supporting_artifacts")
-                except Exception as exc:
-                    artifact_log_errors.append(f"{artifact.name}: {exc}")
+        artifact_log_errors = _log_supporting_artifacts(mlflow, artifacts)
 
     return {
         "mlflow_logged": True,
@@ -150,7 +198,7 @@ def log_training_run(
 
 
 def log_comparison_run(config: dict[str, Any], results_df, artifacts: list[Path]) -> bool:
-    if not config.get("tracking", {}).get("enable_mlflow", False):
+    if not _tracking_enabled(config):
         return False
 
     try:
@@ -174,10 +222,5 @@ def log_comparison_run(config: dict[str, Any], results_df, artifacts: list[Path]
                     if isinstance(value, (int, float)):
                         mlflow.log_metric(key, float(value))
 
-        for artifact in artifacts:
-            if artifact.exists():
-                try:
-                    mlflow.log_artifact(str(artifact), artifact_path="supporting_artifacts")
-                except Exception:
-                    pass
+        _log_supporting_artifacts(mlflow, artifacts)
     return True

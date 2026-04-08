@@ -4,6 +4,7 @@ pyarrow
 ortools
 pyyaml
 scikit-learn
+matplotlib
 mlflow
 zenml
 codecarbon
