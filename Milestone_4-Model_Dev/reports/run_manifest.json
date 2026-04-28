@@ -1,20 +1,20 @@
 {
-  "config_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\configs\\train_best_model.yaml",
-  "dataset_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\datasets\\benchmark_instances.csv",
-  "split_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\splits\\instance_splits.csv",
-  "reference_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\reference\\reference_solutions.csv",
-  "candidate_spec_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\artifacts\\llm_robust_prompt_v1_spec.json",
-  "sft_manifest_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_manifest.json",
+  "config_path": "configs\\train_live_llm.yaml",
+  "dataset_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\datasets\\benchmark_instances.csv",
+  "split_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\splits\\instance_splits.csv",
+  "reference_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\reference\\reference_solutions.csv",
+  "candidate_spec_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\artifacts\\llm_robust_prompt_v1_spec.json",
+  "sft_manifest_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_manifest.json",
   "candidate_spec": {
     "name": "llm_robust_prompt_v1",
     "kind": "llm",
-    "backend": "groq",
+    "backend": "self_hosted_openai",
     "model_name": "llama-3.1-8b-instant",
     "prompt_template": "robust_v1",
     "temperature": 0.0,
     "max_tokens": 850,
     "enabled": true,
-    "notes": "Improved robust parser prompt supporting both OR-Library file variants."
+    "notes": "Improved robust parser prompt evaluated against a self-hosted OpenAI-compatible code model runtime. Runtime endpoint: https://api.groq.com/openai/v1."
   },
   "split_counts": {
     "train": 7,
@@ -25,8 +25,10 @@
     {
       "candidate_name": "llm_robust_prompt_v1",
       "candidate_kind": "llm",
-      "backend_name": "groq",
+      "backend_name": "self_hosted_openai",
       "model_name": "llama-3.1-8b-instant",
+      "generation_backend_name": "self_hosted_openai",
+      "generation_model_name": "llama-3.1-8b-instant",
       "prompt_template": "robust_v1",
       "split": "train",
       "attempted_instances": 7,
@@ -41,15 +43,17 @@
       "mean_gap_vs_baseline_pct": 0.0,
       "median_gap_vs_baseline_pct": 0.0,
       "mean_gap_vs_best_known_pct": 0.0,
-      "mean_total_runtime_s": 1.1884807586669923,
-      "mean_generation_runtime_s": 1.1884807586669923,
+      "mean_total_runtime_s": 1.4651033719380695,
+      "mean_generation_runtime_s": 1.4651033719380695,
       "mean_execution_runtime_s": 0.0
     },
     {
       "candidate_name": "llm_robust_prompt_v1",
       "candidate_kind": "llm",
-      "backend_name": "groq",
+      "backend_name": "self_hosted_openai",
       "model_name": "llama-3.1-8b-instant",
+      "generation_backend_name": "self_hosted_openai",
+      "generation_model_name": "llama-3.1-8b-instant",
       "prompt_template": "robust_v1",
       "split": "val",
       "attempted_instances": 4,
@@ -64,15 +68,17 @@
       "mean_gap_vs_baseline_pct": 0.0,
       "median_gap_vs_baseline_pct": 0.0,
       "mean_gap_vs_best_known_pct": 0.0,
-      "mean_total_runtime_s": 1.188480758666992,
-      "mean_generation_runtime_s": 1.188480758666992,
+      "mean_total_runtime_s": 1.4651033719380697,
+      "mean_generation_runtime_s": 1.4651033719380697,
       "mean_execution_runtime_s": 0.0
     },
     {
       "candidate_name": "llm_robust_prompt_v1",
       "candidate_kind": "llm",
-      "backend_name": "groq",
+      "backend_name": "self_hosted_openai",
       "model_name": "llama-3.1-8b-instant",
+      "generation_backend_name": "self_hosted_openai",
+      "generation_model_name": "llama-3.1-8b-instant",
       "prompt_template": "robust_v1",
       "split": "test",
       "attempted_instances": 4,
@@ -87,17 +93,17 @@
       "mean_gap_vs_baseline_pct": 0.0,
       "median_gap_vs_baseline_pct": 0.0,
       "mean_gap_vs_best_known_pct": 0.0,
-      "mean_total_runtime_s": 1.188480758666992,
-      "mean_generation_runtime_s": 1.188480758666992,
+      "mean_total_runtime_s": 1.4651033719380697,
+      "mean_generation_runtime_s": 1.4651033719380697,
       "mean_execution_runtime_s": 0.0
     }
   ],
   "mlflow_logged": true,
-  "registered_model_name": "m4-symbolic-generator-best",
+  "registered_model_name": "m4-symbolic-generator-best-live",
   "mlflow_artifact_log_errors": [],
   "figure_paths": {
-    "training_metrics": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_metrics.png",
-    "training_status": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_status.png",
-    "training_dashboard": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_dashboard.png"
+    "training_metrics": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_metrics.png",
+    "training_status": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_status.png",
+    "training_dashboard": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\reports\\training_dashboard.png"
   }
 }

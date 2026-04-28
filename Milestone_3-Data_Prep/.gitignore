@@ -1,1 +1,4 @@
 .zen/
+.zen_m3/
+.zen_m3_runtime/
+.zen_m3_store/

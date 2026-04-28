@@ -1,5 +1,7 @@
 run_name: symbolic_generator_model_comparison
 random_seed: 42
+runtime:
+  allow_template_fallback: true
 evaluation:
   splits:
     - train
@@ -18,12 +20,12 @@ comparison:
     - llm_fine_tuned
   llm_token_prompt_v0:
     enabled: true
-    model_name: llama-3.1-8b-instant
+    model_name: Qwen/Qwen2.5-Coder-7B-Instruct
     prompt_template: token_v0
     max_tokens: 650
   llm_robust_prompt_v1:
     enabled: true
-    model_name: llama-3.1-8b-instant
+    model_name: Qwen/Qwen2.5-Coder-7B-Instruct
     prompt_template: robust_v1
     max_tokens: 850
   llm_fine_tuned:

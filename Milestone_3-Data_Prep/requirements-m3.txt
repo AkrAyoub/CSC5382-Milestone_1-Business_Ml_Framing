@@ -5,7 +5,7 @@ feast
 dvc
 
 # ZenML local orchestration/runtime dependencies
-zenml[local]
+zenml[local,server]
 sqlmodel==0.0.18
 passlib[bcrypt]~=1.7.4
 bcrypt==4.0.1

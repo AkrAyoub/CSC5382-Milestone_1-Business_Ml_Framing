@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -45,10 +46,28 @@ from m4_model_dev.utils.config import load_yaml_config
 DEFAULT_EVAL_SPLITS = ["train", "val", "test"]
 
 
+def _is_missing_self_hosted_runtime_error(message: str) -> bool:
+    lowered = message.lower()
+    return (
+        "missing self_hosted_openai_base_url" in lowered
+        or "missing self_hosted_model_name" in lowered
+        or "self-hosted openai-compatible runtime" in lowered
+    )
+
+
+def apply_runtime_options(config: dict[str, Any]) -> None:
+    runtime_block = dict(config.get("runtime", {}))
+    if "allow_template_fallback" in runtime_block:
+        allow_fallback = bool(runtime_block["allow_template_fallback"])
+        os.environ["M4_DISABLE_TEMPLATE_FALLBACK"] = "0" if allow_fallback else "1"
+
+
 def load_training_config(config_path: Path | None = None) -> tuple[Path, dict[str, Any]]:
     ensure_runtime_dirs()
     resolved_path = config_path or (M4_CONFIGS_DIR / "train_best_model.yaml")
-    return resolved_path, load_yaml_config(resolved_path)
+    config = load_yaml_config(resolved_path)
+    apply_runtime_options(config)
+    return resolved_path, config
 
 
 def _read_reference_df(reference_path: Path) -> pd.DataFrame:
@@ -65,7 +84,12 @@ def _build_runtime_inputs(config: dict[str, Any]) -> EvaluationInputs:
     reference_path = build_reference_solutions(M4_REFERENCE_DIR / "reference_solutions.csv")
     dataset_path = build_benchmark_dataset(reference_path=reference_path, output_path=M4_DATASETS_DIR / "benchmark_instances.csv")
     split_path = build_grouped_splits(dataset_path=dataset_path)
-    sft_paths = build_sft_dataset(split_path=split_path, output_dir=M4_SFT_DIR)
+    sft_paths = build_sft_dataset(
+        split_path=split_path,
+        dataset_path=dataset_path,
+        reference_path=reference_path,
+        output_dir=M4_SFT_DIR,
+    )
 
     dataset_df = pd.read_csv(dataset_path)
     split_df = _read_split_df(split_path)
@@ -121,6 +145,8 @@ def _candidate_result_row(
     execution_runtime_s: float = 0.0,
     total_runtime_s: float = 0.0,
     generated_code_path: str = "",
+    generation_backend_name: str = "",
+    generation_model_name: str = "",
 ) -> dict[str, Any]:
     baseline_objective = float(baseline_row["objective"])
     best_known = baseline_row.get("best_known")
@@ -136,6 +162,8 @@ def _candidate_result_row(
         "candidate_kind": candidate.kind,
         "backend_name": candidate.backend or "",
         "model_name": candidate.model_name or "",
+        "generation_backend_name": generation_backend_name or candidate.backend or "",
+        "generation_model_name": generation_model_name or candidate.model_name or "",
         "prompt_template": candidate.prompt_template or "",
         "split": split_name,
         "instance_id": instance_id,
@@ -175,6 +203,8 @@ def evaluate_candidate_bundle(
     shared_generation_runtime_s = 0.0
     generated_code_path = ""
     generated_code = ""
+    generation_backend_name = ""
+    generation_model_name = ""
     generation_error: Exception | None = None
     per_instance_generation_runtime_s = 0.0
 
@@ -198,6 +228,8 @@ def evaluate_candidate_bundle(
                 code_path.write_text(generated.code, encoding="utf-8")
                 generated_code_path = str(code_path)
                 generated_code = generated.code
+                generation_backend_name = generated.backend_name
+                generation_model_name = generated.model_name
             except Exception as exc:
                 shared_generation_runtime_s = time.time() - llm_t0
                 generation_error = exc
@@ -259,7 +291,7 @@ def evaluate_candidate_bundle(
                         facility_count_m=int(row["facility_count_m"]),
                         customer_count_n=int(row["customer_count_n"]),
                         baseline_row=baseline_row,
-                        status="SKIPPED" if "Missing GROQ_API_KEY" in str(generation_error) else "FAIL",
+                        status="SKIPPED" if _is_missing_self_hosted_runtime_error(str(generation_error)) else "FAIL",
                         error=f"{type(generation_error).__name__}: {generation_error}",
                         generation_runtime_s=per_instance_generation_runtime_s,
                         total_runtime_s=per_instance_generation_runtime_s,
@@ -296,6 +328,8 @@ def evaluate_candidate_bundle(
                         execution_runtime_s=execution_runtime_s,
                         total_runtime_s=per_instance_generation_runtime_s + execution_runtime_s,
                         generated_code_path=generated_code_path,
+                        generation_backend_name=generation_backend_name,
+                        generation_model_name=generation_model_name,
                     )
                 )
             except Exception as exc:
@@ -315,6 +349,8 @@ def evaluate_candidate_bundle(
                         execution_runtime_s=execution_runtime_s,
                         total_runtime_s=per_instance_generation_runtime_s + execution_runtime_s,
                         generated_code_path=generated_code_path,
+                        generation_backend_name=generation_backend_name,
+                        generation_model_name=generation_model_name,
                     )
                 )
     finally:

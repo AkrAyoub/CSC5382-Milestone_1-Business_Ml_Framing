@@ -1,0 +1,92 @@
+{
+  "symbolic_sft_train.jsonl": {
+    "required_columns": [
+      "instance_id",
+      "instance_path",
+      "split",
+      "facility_count_m",
+      "customer_count_n",
+      "prompt_template",
+      "prompt",
+      "response",
+      "text",
+      "source",
+      "validation_status",
+      "execution_status",
+      "exact_match_with_baseline"
+    ],
+    "numeric_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "non_negative_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "id_columns": [
+      "instance_id"
+    ]
+  },
+  "symbolic_sft_val.jsonl": {
+    "required_columns": [
+      "instance_id",
+      "instance_path",
+      "split",
+      "facility_count_m",
+      "customer_count_n",
+      "prompt_template",
+      "prompt",
+      "response",
+      "text",
+      "source",
+      "validation_status",
+      "execution_status",
+      "exact_match_with_baseline"
+    ],
+    "numeric_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "non_negative_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "id_columns": [
+      "instance_id"
+    ]
+  },
+  "symbolic_sft_test.jsonl": {
+    "required_columns": [
+      "instance_id",
+      "instance_path",
+      "split",
+      "facility_count_m",
+      "customer_count_n",
+      "prompt_template",
+      "prompt",
+      "response",
+      "text",
+      "source",
+      "validation_status",
+      "execution_status",
+      "exact_match_with_baseline"
+    ],
+    "numeric_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "non_negative_columns": [
+      "facility_count_m",
+      "customer_count_n",
+      "exact_match_with_baseline"
+    ],
+    "id_columns": [
+      "instance_id"
+    ]
+  }
+}

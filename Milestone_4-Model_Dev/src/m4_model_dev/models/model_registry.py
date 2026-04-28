@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -32,35 +33,77 @@ DEFAULT_CANDIDATES: dict[str, CandidateSpec] = {
     "llm_token_prompt_v0": CandidateSpec(
         name="llm_token_prompt_v0",
         kind="llm",
-        backend="groq",
-        model_name="llama-3.1-8b-instant",
+        backend="self_hosted_openai",
+        model_name="Qwen/Qwen2.5-Coder-7B-Instruct",
         prompt_template="token_v0",
         temperature=0.0,
         max_tokens=650,
-        notes="Original token-stream prompt inherited from the M2 PoC.",
+        notes="Token-stream prompt evaluated against a self-hosted OpenAI-compatible code model runtime.",
     ),
     "llm_robust_prompt_v1": CandidateSpec(
         name="llm_robust_prompt_v1",
         kind="llm",
-        backend="groq",
-        model_name="llama-3.1-8b-instant",
+        backend="self_hosted_openai",
+        model_name="Qwen/Qwen2.5-Coder-7B-Instruct",
         prompt_template="robust_v1",
         temperature=0.0,
         max_tokens=850,
-        notes="Improved robust parser prompt supporting both OR-Library file variants.",
+        notes="Improved robust parser prompt evaluated against a self-hosted OpenAI-compatible code model runtime.",
     ),
     "llm_fine_tuned": CandidateSpec(
         name="llm_fine_tuned",
         kind="llm",
-        backend="groq",
+        backend="self_hosted_openai",
         model_name=None,
         prompt_template="robust_v1",
         temperature=0.0,
         max_tokens=850,
         enabled=False,
-        notes="Optional slot for a future fine-tuned model id.",
+        notes="Optional self-hosted fine-tuned slot resolved from environment after SFT/LoRA training.",
     ),
 }
+
+
+def _first_env(*names: str) -> str | None:
+    for name in names:
+        value = (os.getenv(name) or "").strip()
+        if value:
+            return value
+    return None
+
+
+def _apply_runtime_env_defaults(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("backend") != "self_hosted_openai":
+        return payload
+
+    payload = dict(payload)
+    payload["model_name"] = _first_env(
+        "SELF_HOSTED_MODEL_NAME",
+        "M4_SELF_HOSTED_MODEL_NAME",
+        "M5_SELF_HOSTED_MODEL_NAME",
+    ) or payload.get("model_name")
+
+    base_url = _first_env(
+        "SELF_HOSTED_OPENAI_BASE_URL",
+        "M4_SELF_HOSTED_BASE_URL",
+        "M5_SELF_HOSTED_BASE_URL",
+    )
+    if base_url:
+        payload["notes"] = (
+            f"{payload.get('notes', '')} Runtime endpoint: {base_url}."
+        ).strip()
+
+    if payload.get("name") == "llm_fine_tuned":
+        fine_tuned_model_name = _first_env(
+            "SELF_HOSTED_FINE_TUNED_MODEL_NAME",
+            "M4_SELF_HOSTED_FINE_TUNED_MODEL_NAME",
+            "M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME",
+        )
+        if fine_tuned_model_name:
+            payload["model_name"] = fine_tuned_model_name
+            payload["enabled"] = True
+
+    return payload
 
 
 def list_supported_candidate_names() -> list[str]:
@@ -74,7 +117,7 @@ def _merged_candidate_payload(candidate_name: str, overrides: dict[str, Any] | N
     payload = asdict(DEFAULT_CANDIDATES[candidate_name])
     if overrides:
         payload.update({key: value for key, value in overrides.items() if value is not None})
-    return payload
+    return _apply_runtime_env_defaults(payload)
 
 
 def resolve_candidate_spec(candidate_name: str, overrides: dict[str, Any] | None = None) -> CandidateSpec:

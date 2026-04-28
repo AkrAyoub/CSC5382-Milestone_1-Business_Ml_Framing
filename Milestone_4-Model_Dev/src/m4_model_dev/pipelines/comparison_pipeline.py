@@ -8,7 +8,7 @@ import pandas as pd
 from m4_model_dev.models.model_registry import resolve_comparison_candidates
 from m4_model_dev.paths import M4_CONFIGS_DIR, M4_REPORTS_DIR, ensure_runtime_dirs
 from m4_model_dev.pipelines.contracts import ComparisonPipelineResult
-from m4_model_dev.pipelines.training_pipeline import evaluate_candidate_bundle, prepare_training_inputs
+from m4_model_dev.pipelines.training_pipeline import apply_runtime_options, evaluate_candidate_bundle, prepare_training_inputs
 from m4_model_dev.reporting.comparison_reports import write_comparison_reports
 from m4_model_dev.reporting.figures import write_comparison_figures
 from m4_model_dev.tracking.mlflow_utils import log_comparison_run
@@ -19,6 +19,7 @@ def run_model_comparison_pipeline(config_path: Path | None = None) -> Comparison
     ensure_runtime_dirs()
     config_path = config_path or (M4_CONFIGS_DIR / "compare_models.yaml")
     config = load_yaml_config(config_path)
+    apply_runtime_options(config)
     training_inputs = prepare_training_inputs(config)
     candidate_specs = resolve_comparison_candidates(config)
 

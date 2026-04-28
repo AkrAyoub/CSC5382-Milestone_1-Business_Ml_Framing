@@ -7,10 +7,10 @@ from pathlib import Path
 import sys as _sys
 
 try:
-    from ..paths import FEATURES_DATA_DIR, INTERIM_DATA_DIR, M3_ROOT, PROCESSED_DATA_DIR, STATS_DIR, VALIDATION_DIR
+    from ..paths import FEATURES_DATA_DIR, INTERIM_DATA_DIR, M3_ROOT, PROCESSED_DATA_DIR, STATS_DIR, TRAINING_DATA_DIR, VALIDATION_DIR
 except ImportError:
     _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from paths import FEATURES_DATA_DIR, INTERIM_DATA_DIR, M3_ROOT, PROCESSED_DATA_DIR, STATS_DIR, VALIDATION_DIR
+    from paths import FEATURES_DATA_DIR, INTERIM_DATA_DIR, M3_ROOT, PROCESSED_DATA_DIR, STATS_DIR, TRAINING_DATA_DIR, VALIDATION_DIR
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,7 @@ def main() -> None:
         PipelineStep("Raw Data Ingestion", M3_ROOT / "pipeline" / "ingest_data.py"),
         PipelineStep("Data Preprocessing", M3_ROOT / "pipeline" / "preprocess_data.py"),
         PipelineStep("Feature Engineering", M3_ROOT / "pipeline" / "engineer_features.py"),
+        PipelineStep("Symbolic SFT Dataset Build", M3_ROOT / "pipeline" / "build_symbolic_sft_dataset.py"),
         PipelineStep("Data Validation", M3_ROOT / "pipeline" / "validate_data.py"),
     ]
 
@@ -56,6 +57,7 @@ def main() -> None:
     print(f"- Interim data:    {INTERIM_DATA_DIR}")
     print(f"- Processed data:  {PROCESSED_DATA_DIR}")
     print(f"- Features:        {FEATURES_DATA_DIR}")
+    print(f"- Training data:   {TRAINING_DATA_DIR}")
     print(f"- Validation:      {VALIDATION_DIR}")
     print(f"- Statistics:      {STATS_DIR}")
 

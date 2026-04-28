@@ -28,6 +28,16 @@ Milestone_4-Model_Dev/.zen/local_stores/
 Milestone_4-Model_Dev/.zen_local/
 Milestone_4-Model_Dev/mlruns/
 Milestone_4-Model_Dev/mlflow.db
+Milestone_4-Model_Dev/data/models/
+Milestone_4-Model_Dev/data/training_runs/
 Milestone_4-Model_Dev/artifacts/*.joblib
 Milestone_4-Model_Dev/artifacts/*.npz
 Milestone_4-Model_Dev/reports/emissions.csv
+Milestone_4-Model_Dev/reports/generated_code/
+
+# Milestone 5 local runtime state
+Milestone_5-ML_Productionization/.m5_runtime/
+Milestone_5-ML_Productionization/.pytest_cache/
+Milestone_5-ML_Productionization/.streamlit/secrets.toml
+Milestone_5-ML_Productionization/mlruns/
+Milestone_5-ML_Productionization/src/*.egg-info/

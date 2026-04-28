@@ -1,0 +1,45 @@
+services:
+  llm-server:
+    image: vllm/vllm-openai:latest
+    command:
+      - --model
+      - ${SELF_HOSTED_MODEL_NAME:-Qwen/Qwen2.5-Coder-7B-Instruct}
+      - --served-model-name
+      - ${SELF_HOSTED_MODEL_NAME:-Qwen/Qwen2.5-Coder-7B-Instruct}
+      - --dtype
+      - auto
+      - --api-key
+      - ${SELF_HOSTED_OPENAI_API_KEY:-local-dev-key}
+      - --max-model-len
+      - ${SELF_HOSTED_MAX_MODEL_LEN:-4096}
+    environment:
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+    ports:
+      - "8001:8000"
+    profiles:
+      - selfhosted
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Milestone_5-ML_Productionization/deployment/Dockerfile.api
+    environment:
+      M5_API_HOST: 0.0.0.0
+      M5_API_PORT: 8000
+      SELF_HOSTED_OPENAI_BASE_URL: ${SELF_HOSTED_OPENAI_BASE_URL:-http://llm-server:8000/v1}
+      SELF_HOSTED_OPENAI_API_KEY: ${SELF_HOSTED_OPENAI_API_KEY:-local-dev-key}
+      SELF_HOSTED_MODEL_NAME: ${SELF_HOSTED_MODEL_NAME:-Qwen/Qwen2.5-Coder-7B-Instruct}
+      M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME: ${M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME:-}
+    ports:
+      - "8000:8000"
+
+  client:
+    build:
+      context: ../..
+      dockerfile: Milestone_5-ML_Productionization/deployment/Dockerfile.client
+    environment:
+      M5_API_BASE_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api

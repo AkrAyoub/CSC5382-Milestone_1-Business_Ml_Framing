@@ -44,6 +44,25 @@ stages:
       - data/features/facility_features.json
       - data/features/customer_features.json
 
+  training:
+    cmd: python pipeline/build_symbolic_sft_dataset.py
+    deps:
+      - pipeline/build_symbolic_sft_dataset.py
+      - data/interim/dataset_manifest.csv
+      - data/processed/instances.csv
+      - data/processed/facilities.csv
+      - data/processed/customers.csv
+      - data/processed/assignment_costs.csv
+    outs:
+      - data/training/symbolic_sft_train.csv
+      - data/training/symbolic_sft_train.jsonl
+      - data/training/symbolic_sft_val.csv
+      - data/training/symbolic_sft_val.jsonl
+      - data/training/symbolic_sft_test.csv
+      - data/training/symbolic_sft_test.jsonl
+      - data/training/symbolic_sft_manifest.json
+      - data/training/symbolic_sft_summary.txt
+
   validate:
     cmd: python pipeline/validate_data.py
     deps:
@@ -51,6 +70,7 @@ stages:
       - schema/raw_schema.json
       - schema/processed_schema.json
       - schema/feature_schema.json
+      - schema/training_schema.json
       - data/interim/dataset_manifest.csv
       - data/interim/dataset_manifest.json
       - data/processed/instances.csv
@@ -60,6 +80,10 @@ stages:
       - data/features/instance_features.csv
       - data/features/facility_features.csv
       - data/features/customer_features.csv
+      - data/training/symbolic_sft_train.jsonl
+      - data/training/symbolic_sft_val.jsonl
+      - data/training/symbolic_sft_test.jsonl
+      - data/training/symbolic_sft_manifest.json
     outs:
       - reports/validation/validation_summary.json
       - reports/validation/anomalies.json
@@ -67,3 +91,4 @@ stages:
       - reports/stats/raw_statistics.json
       - reports/stats/processed_statistics.json
       - reports/stats/feature_statistics.json
+      - reports/stats/training_statistics.json

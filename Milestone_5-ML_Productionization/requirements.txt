@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+streamlit
+requests
+httpx
+pytest
+pytest-cov
+pandas
+mlflow
+ortools
+openai
+pydantic
+pyyaml

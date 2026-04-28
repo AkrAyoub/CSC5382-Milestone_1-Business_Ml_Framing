@@ -1,0 +1,22 @@
+run_name: symbolic_generator_robust_prompt_v1_live_llm
+random_seed: 42
+runtime:
+  allow_template_fallback: false
+candidate:
+  name: llm_robust_prompt_v1
+  enabled: true
+  model_name: Qwen/Qwen2.5-Coder-7B-Instruct
+  prompt_template: robust_v1
+  max_tokens: 850
+evaluation:
+  splits:
+    - train
+    - val
+    - test
+  exact_match_tolerance_pct: 1.0e-6
+tracking:
+  enable_mlflow: true
+  enable_codecarbon: true
+  register_model: true
+  registered_model_name: m4-symbolic-generator-best-live
+  experiment_name: milestone4-symbolic-evaluation-live

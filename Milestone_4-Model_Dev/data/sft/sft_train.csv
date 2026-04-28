@@ -1,0 +1,1163 @@
+instance_id,instance_path,split,facility_count_m,customer_count_n,best_known_objective,reference_objective,reference_gap_percent,prompt_template,source,validation_status,execution_status,exact_match_with_baseline,repair_notes,prompt,response,text
+cap101,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap101.txt,train,25,50,796648.437,796648.4375000001,6.276295273223345e-08,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+cap102,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap102.txt,train,25,50,854704.2,854704.2000000001,1.3620539342960386e-14,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+cap131,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap131.txt,train,50,50,793439.562,793439.5625000001,6.30167823616018e-08,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+cap132,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap132.txt,train,50,50,851495.325,851495.3250000001,1.3671868583299011e-14,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+cap71,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap71.txt,train,16,50,932615.75,932615.75,0.0,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+cap72,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\cap72.txt,train,16,50,977799.4,977799.4,0.0,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
+capa,D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\data\raw\capa.txt,train,100,1000,17156454.478,17156454.478299994,1.7485774979295783e-09,robust_v1,reference_solver_teacher,passed,passed,1,,"Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports","from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+","### Instruction
+Write ONE self-contained Python module that solves the OR-Library UNCAPACITATED Facility Location Problem (UFLP) with OR-Tools CBC.
+
+Requirements:
+- define solve(instance_path: str) -> dict
+- parse both OR-Library variants using line-based parsing and numeric-token extraction
+- use solver = pywraplp.Solver.CreateSolver(""CBC"")
+- return keys: objective, open_facilities, assignments
+- no prints, no filesystem writes, no unsafe imports
+
+### Response
+from pathlib import Path
+import re
+from ortools.linear_solver import pywraplp
+
+NUMBER_PATTERN = re.compile(r""[-+]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][-+]?\d+)?"")
+
+
+def _numbers(line: str) -> list[float]:
+    return [float(token) for token in NUMBER_PATTERN.findall(line)]
+
+
+def solve(instance_path: str) -> dict:
+    lines = [line.strip() for line in Path(instance_path).read_text().splitlines() if line.strip()]
+    header = _numbers(lines[0])
+    m = int(header[0])
+    n = int(header[1])
+    line_idx = 1
+
+    fixed = []
+    for _ in range(m):
+        values = _numbers(lines[line_idx])
+        line_idx += 1
+        fixed.append(values[-1])
+
+    cost = []
+    for _ in range(n):
+        _demand = _numbers(lines[line_idx])[0]
+        line_idx += 1
+        row = []
+        while len(row) < m:
+            row.extend(_numbers(lines[line_idx]))
+            line_idx += 1
+        cost.append(row[:m])
+
+    solver = pywraplp.Solver.CreateSolver(""CBC"")
+    y = [solver.BoolVar(f""y[{i}]"") for i in range(m)]
+    x = [[solver.BoolVar(f""x[{j},{i}]"") for i in range(m)] for j in range(n)]
+
+    for j in range(n):
+        solver.Add(sum(x[j][i] for i in range(m)) == 1)
+    for j in range(n):
+        for i in range(m):
+            solver.Add(x[j][i] <= y[i])
+
+    obj = solver.Objective()
+    for i in range(m):
+        obj.SetCoefficient(y[i], fixed[i])
+    for j in range(n):
+        for i in range(m):
+            obj.SetCoefficient(x[j][i], cost[j][i])
+    obj.SetMinimization()
+
+    status = solver.Solve()
+    if status not in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
+        raise RuntimeError(""solver failed"")
+
+    open_facilities = [i for i in range(m) if y[i].solution_value() > 0.5]
+    assignments = []
+    for j in range(n):
+        chosen = -1
+        for i in range(m):
+            if x[j][i].solution_value() > 0.5:
+                chosen = i
+                break
+        if chosen < 0:
+            raise RuntimeError(""invalid assignment"")
+        assignments.append(chosen)
+
+    return {
+        ""objective"": solver.Objective().Value(),
+        ""open_facilities"": open_facilities,
+        ""assignments"": assignments,
+    }
+
+"
