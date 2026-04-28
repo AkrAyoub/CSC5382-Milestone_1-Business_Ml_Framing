@@ -1,17 +1,30 @@
-pandas
-numpy
-pyarrow
-ortools
-pyyaml
-matplotlib
-mlflow
-zenml[local]
-codecarbon
-groq
+# Milestone 4 core runtime: symbolic model development, offline evaluation,
+# MLflow tracking/model registry, ZenML orchestration, reports, and tests.
+#
+# Heavy self-hosted fine-tuning dependencies stay in requirements-selfhosted.txt.
+
+pandas>=2.2,<3
+numpy>=2.0,<3
+pyarrow>=16,<24
+ortools>=9.10,<10
+pyyaml>=6,<7
+matplotlib>=3.8,<4
+
+mlflow>=3.0,<4
+zenml[local,server]==0.94.3
+codecarbon>=2.3,<3
+openai>=2.0,<3
+
+# ZenML 0.94.x local/server compatibility pins used by the local Windows stack.
 sqlmodel==0.0.18
 passlib[bcrypt]~=1.7.4
 bcrypt==4.0.1
 pymysql>=1.1.1,<1.2.0
 sqlalchemy>=2.0.0,<3.0.0
-sqlalchemy-utils
+sqlalchemy-utils>=0.41,<1
 alembic>=1.8.1,<=1.15.2
+psutil>=5,<6
+
+# Shared course venv compatibility: IPython 9.x requires psutil>=7, which
+# conflicts with ZenML's current server dependency stack.
+ipython<9

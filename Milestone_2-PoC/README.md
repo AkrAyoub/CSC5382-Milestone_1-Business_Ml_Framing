@@ -107,34 +107,64 @@ Captured application screenshots are stored in [assets/screenshots/](assets/scre
 
 ## 2. Milestone 2 - Development of Proof-of-Concepts
 
-The proof of concept uses OR-Library UFLP instances from [../data/raw/](../data/raw/) and demonstrates one baseline-centered scenario: solve the selected instance with the deterministic CBC solver first, then optionally ask an off-the-shelf LLM to generate solver code for the same instance and verify the generated result against the baseline. This keeps the milestone focused on a working end-to-end PoC while staying aligned with Milestone 1, where the LLM assists symbolic modeling and the solver remains the trusted optimization engine.
+Milestone 2 proves that the Milestone 1 project idea can run as an interactive application. The PoC uses the same OR-Library UFLP benchmark data from [../data/raw/](../data/raw/), solves selected instances with the deterministic OR-Tools/CBC baseline, and optionally asks an off-the-shelf LLM to generate solver-compatible code for the same instance. The generated code is not trusted automatically; it is executed in a controlled path and compared against the deterministic baseline.
 
 ### 2.1 Model Integration
 
-The primary integrated model is the deterministic OR-Tools CBC baseline in [src/baseline_solver.py](src/baseline_solver.py). It parses the OR-Library UFLP format, builds the facility-open variables and customer-assignment variables, minimizes fixed plus assignment cost, and compares the objective against [../data/raw/uncapopt.txt](../data/raw/uncapopt.txt) when best-known values are available. This satisfies the milestone requirement for a working baseline model on the project dataset.
+Implementation evidence:
 
-The PoC also integrates an off-the-shelf LLM path through [src/llm_backend.py](src/llm_backend.py) and [src/llm_generate.py](src/llm_generate.py). The LLM does not replace the optimizer. Instead, it generates OR-Tools solver code, that code is statically checked, executed through [src/exec_generated.py](src/exec_generated.py), and compared against the deterministic baseline inside [src/poc_pipeline.py](src/poc_pipeline.py). This preserves the Milestone 1 architecture: the LLM acts as the symbolic modeler, while the solver provides the correctness reference.
+- Baseline model: [src/baseline_solver.py](src/baseline_solver.py)
+- Scenario runner: [src/poc_pipeline.py](src/poc_pipeline.py)
+- Optional LLM backend: [src/llm_backend.py](src/llm_backend.py)
+- LLM code generation: [src/llm_generate.py](src/llm_generate.py)
+- Generated-code execution and validation: [src/exec_generated.py](src/exec_generated.py)
+- Shared data path contract: [src/paths.py](src/paths.py)
 
-The refactor also introduced [src/paths.py](src/paths.py) so the PoC uses the shared repository dataset root instead of milestone-local hardcoded paths. In addition, the LLM backend is abstracted so the current off-the-shelf model and any later fine-tuned model can use the same interface without changing the app flow or the evaluation logic.
+The baseline parser reads OR-Library UFLP files, ignores capacities and demands as required by the project contract, builds the canonical uncapacitated facility-location MILP, solves with OR-Tools/CBC, and compares against [../data/raw/uncapopt.txt](../data/raw/uncapopt.txt). The optional LLM path uses the LLM as a symbolic modeler: it generates solver code, while OR-Tools/CBC remains the executor and verifier.
+
+This satisfies the model-integration requirement because the PoC runs a real project baseline on the actual benchmark data and demonstrates the LLM-assisted symbolic modeling path without replacing the trusted solver.
 
 ### 2.2 App Development
 
-The application is implemented in Streamlit in [app.py](app.py). The refactored app follows a single scenario instead of two disconnected modes:
+Implementation evidence:
 
-- the user selects one OR-Library instance
-- the deterministic CBC baseline always runs first
-- the user may optionally enable LLM-generated solver verification for the same instance
-- the UI reports the baseline objective, best-known gap when available, LLM objective when enabled, and the full execution trace
+- Streamlit app: [app.py](app.py)
+- Screenshots: [assets/screenshots/](assets/screenshots/)
+- Requirements: [requirements.txt](requirements.txt)
 
-This app structure is intentionally simple because the milestone rubric asks for a working proof of concept rather than a full production interface. The refactor removed the older split between a baseline-only mode and a separate LLM mode, and replaced it with one clearer workflow that is easier to demonstrate, test, and extend in later milestones. The app also exposes the pipeline trace so generation, validation, sandbox execution, and comparison steps can be inspected during demos and debugging.
+The app gives a user-facing workflow:
+
+1. Select a catalog benchmark instance.
+2. Run the deterministic CBC baseline.
+3. Optionally enable LLM-generated solver-code verification.
+4. Inspect objective value, best-known gap, generated result, and execution trace.
+
+The UI intentionally stays PoC-focused. It is not a production service yet; that role is handled later in Milestone 5. For Milestone 2, the important evidence is that the project idea can be exercised interactively and that the user can see the baseline, optional LLM result, and verification trace in one scenario.
 
 ### 2.3 End-to-End Scenario Testing
 
-The end-to-end milestone test is implemented in [tests/e2e.py](tests/e2e.py). It verifies the runnable scenario instead of UI-only behavior.
+Implementation evidence:
 
-The baseline test runs on three repository instances and checks that the CBC result stays at or near the known optimum when [../data/raw/uncapopt.txt](../data/raw/uncapopt.txt) contains a reference value. This gives direct evidence that the integrated baseline is functioning correctly on the project dataset and that the shared data path assumptions are valid.
+- End-to-end test: [tests/e2e.py](tests/e2e.py)
+- App smoke flow: [app.py](app.py)
 
-The optional LLM verification test runs on one instance when `E2E_ENABLE_LLM=1` is set. It executes the same baseline-first pipeline used by the app, then checks that the generated solver objective is sufficiently close to the baseline objective. This preserves reproducibility for normal grading while still allowing the extended LLM path to be exercised when credentials are available. Together, the baseline and optional LLM checks provide milestone evidence for model integration, app integration, and an executable end-to-end scenario.
+The tested scenario is:
+
+1. Load an OR-Library instance from the shared repository data.
+2. Parse it into the UFLP problem representation.
+3. Solve it with OR-Tools/CBC.
+4. Compare the objective against the known optimum when available.
+5. Optionally generate solver code with the LLM.
+6. Execute generated code and compare it against the deterministic baseline.
+
+The baseline E2E path verifies multiple benchmark instances. The optional LLM path is enabled with `E2E_ENABLE_LLM=1` when credentials are available. This gives a reproducible grading path without requiring an external API key, while still proving that the LLM scenario works when configured.
+
+Alignment with Milestone 1:
+
+- Same UFLP problem.
+- Same canonical raw-data source.
+- OR-Tools/CBC remains the trusted solver.
+- LLM remains a symbolic code/model generator, not the optimizer.
 
 ## 3. References
 

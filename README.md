@@ -8,5 +8,6 @@ Repository for the course project.
 - [Milestone 2: Proof of Concept](Milestone_2-PoC)
 - [Milestone 3: Data Acquisition Validation and Preparation](Milestone_3-Data_Prep)
 - [Milestone 4: ML Pipeline Development - Model Training and Offline Evaluation](Milestone_4-Model_Dev)
+- [Milestone 5: ML Productionization](Milestone_5-ML_Productionization)
 
 ---

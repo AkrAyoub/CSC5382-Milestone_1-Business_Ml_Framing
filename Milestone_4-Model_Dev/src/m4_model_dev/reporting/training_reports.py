@@ -62,6 +62,8 @@ def write_training_reports(
 
 
 def _render_split_metrics(row: dict[str, Any]) -> str:
+    generation_backend = row.get("generation_backend_name") or row.get("backend_name") or ""
+    generation_suffix = f", generation_backend={generation_backend}" if generation_backend else ""
     return (
         f"{row['split']}: "
         f"success_rate={float(row['success_rate']):.4f}, "
@@ -75,6 +77,7 @@ def _render_split_metrics(row: dict[str, Any]) -> str:
         f"ok={int(row['successful_instances'])}, "
         f"failed={int(row['failed_instances'])}, "
         f"skipped={int(row['skipped_instances'])}"
+        f"{generation_suffix}"
     )
 
 

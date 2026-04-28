@@ -1,9 +1,11 @@
 run_name: symbolic_generator_robust_prompt_v1
 random_seed: 42
+runtime:
+  allow_template_fallback: true
 candidate:
   name: llm_robust_prompt_v1
   enabled: true
-  model_name: llama-3.1-8b-instant
+  model_name: Qwen/Qwen2.5-Coder-7B-Instruct
   prompt_template: robust_v1
   max_tokens: 850
 evaluation:

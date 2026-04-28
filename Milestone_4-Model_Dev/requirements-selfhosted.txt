@@ -1,0 +1,9 @@
+openai
+torch
+transformers
+datasets
+accelerate
+trl[peft]
+dill>=0.3.8,<0.4
+multiprocess>=0.70.16,<0.70.19
+bitsandbytes; platform_system != "Windows"

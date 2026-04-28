@@ -120,7 +120,7 @@ def main() -> None:
 
     test_baseline_scenario(instances, optfile_path, tol)
 
-    enable_llm = os.getenv("E2E_ENABLE_LLM", "0").strip() == "1"
+    enable_llm = os.getenv("E2E_ENABLE_LLM", "1").strip() == "1"
     if enable_llm:
         llm_instance_name = os.getenv("E2E_LLM_INSTANCE", instances[0].name)
         llm_instance = data_raw / llm_instance_name

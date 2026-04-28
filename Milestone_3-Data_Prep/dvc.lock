@@ -10,17 +10,17 @@ stages:
       nfiles: 16
     - path: pipeline/ingest_data.py
       hash: md5
-      md5: 32fa30fd8a86c46e0809cd051637149f
-      size: 5526
+      md5: 879e525c4bfc1f93d880b4d51dae4b48
+      size: 5983
     outs:
     - path: data/interim/dataset_manifest.csv
       hash: md5
-      md5: 86441e1ed26eeea39e53da789eda6ca1
-      size: 2810
+      md5: b9162b127317ecc032cb5635e40c42f1
+      size: 3110
     - path: data/interim/dataset_manifest.json
       hash: md5
-      md5: 8b16124e2929f97164bdfbe1a842eb2f
-      size: 6198
+      md5: 5e53bd4f10d9c80a80464d386a6b7ac5
+      size: 6498
   preprocess:
     cmd: python pipeline/preprocess_data.py
     deps:
@@ -31,16 +31,16 @@ stages:
       nfiles: 16
     - path: data/interim/dataset_manifest.csv
       hash: md5
-      md5: 86441e1ed26eeea39e53da789eda6ca1
-      size: 2810
+      md5: b9162b127317ecc032cb5635e40c42f1
+      size: 3110
     - path: data/interim/dataset_manifest.json
       hash: md5
-      md5: 8b16124e2929f97164bdfbe1a842eb2f
-      size: 6198
+      md5: 5e53bd4f10d9c80a80464d386a6b7ac5
+      size: 6498
     - path: pipeline/preprocess_data.py
       hash: md5
-      md5: d6cd9bbd71268da75699a105020138e1
-      size: 10562
+      md5: ca1507e23cf2a400db35c741407ef9b9
+      size: 11325
     outs:
     - path: data/processed/assignment_costs.csv
       hash: md5
@@ -95,8 +95,8 @@ stages:
       size: 892
     - path: pipeline/engineer_features.py
       hash: md5
-      md5: 73c1b5d08ebbf8fcba0e22791cc68843
-      size: 12827
+      md5: 7c7464455504891a15f988daf41e0b4f
+      size: 13605
     outs:
     - path: data/features/customer_features.csv
       hash: md5
@@ -108,7 +108,7 @@ stages:
       size: 1578593
     - path: data/features/customer_features.parquet
       hash: md5
-      md5: fe5d50aaaf11a831a0d56cf406a777ca
+      md5: dd2ba5645c525c4cb86a806df869300a
       size: 214707
     - path: data/features/facility_features.csv
       hash: md5
@@ -120,7 +120,7 @@ stages:
       size: 355261
     - path: data/features/facility_features.parquet
       hash: md5
-      md5: 261ab38cfd54dde198664d55bb42fdd2
+      md5: 93c097d86fd20cd1b1547b0032102760
       size: 35749
     - path: data/features/instance_features.csv
       hash: md5
@@ -132,7 +132,7 @@ stages:
       size: 9604
     - path: data/features/instance_features.parquet
       hash: md5
-      md5: c4f53c16e6941eb587e6c533367a8ac6
+      md5: 0818a8fc5c51315531bfb0d935be587b
       size: 12313
   validate:
     cmd: python pipeline/validate_data.py
@@ -151,12 +151,12 @@ stages:
       size: 2744
     - path: data/interim/dataset_manifest.csv
       hash: md5
-      md5: 86441e1ed26eeea39e53da789eda6ca1
-      size: 2810
+      md5: b9162b127317ecc032cb5635e40c42f1
+      size: 3110
     - path: data/interim/dataset_manifest.json
       hash: md5
-      md5: 8b16124e2929f97164bdfbe1a842eb2f
-      size: 6198
+      md5: 5e53bd4f10d9c80a80464d386a6b7ac5
+      size: 6498
     - path: data/processed/assignment_costs.csv
       hash: md5
       md5: 18a0b76f0f4f9a2c994faf535d579c39
@@ -173,10 +173,26 @@ stages:
       hash: md5
       md5: 15b1568dc11209ed28f420862887ea09
       size: 892
+    - path: data/training/symbolic_sft_manifest.json
+      hash: md5
+      md5: a73d2268074721a47965230cbfe854eb
+      size: 1425
+    - path: data/training/symbolic_sft_test.jsonl
+      hash: md5
+      md5: 3f9c9deb7f67f403aff9a43d34ec49e6
+      size: 23821
+    - path: data/training/symbolic_sft_train.jsonl
+      hash: md5
+      md5: a048a48d1b073be04b022fe0d0ac560c
+      size: 41694
+    - path: data/training/symbolic_sft_val.jsonl
+      hash: md5
+      md5: 041a68d165e7eba4f671380c391a5140
+      size: 23817
     - path: pipeline/validate_data.py
       hash: md5
-      md5: 020584620c57256186ec8f97a0442d98
-      size: 13685
+      md5: dd44de9a15cf42141df2bc1344edc6a1
+      size: 19996
     - path: schema/feature_schema.json
       hash: md5
       md5: dd642af9939eab6bad97704e9135b156
@@ -189,6 +205,10 @@ stages:
       hash: md5
       md5: c0f3242f2af683a11b96564887b22205
       size: 495
+    - path: schema/training_schema.json
+      hash: md5
+      md5: 7386d8e73a50278f83f034a91321e6b3
+      size: 1932
     outs:
     - path: reports/stats/feature_statistics.json
       hash: md5
@@ -202,6 +222,10 @@ stages:
       hash: md5
       md5: e3e4d1bd7d7c31ab8dda9bf7df5fde63
       size: 728
+    - path: reports/stats/training_statistics.json
+      hash: md5
+      md5: 121a5e1ad0c096fd55c80eb46dd90564
+      size: 1736
     - path: reports/validation/anomalies.json
       hash: md5
       md5: 865d96be45159e3f1d28db5afbf884b4
@@ -212,5 +236,65 @@ stages:
       size: 22
     - path: reports/validation/validation_summary.json
       hash: md5
-      md5: 70b77dd73fbe4b00b3689b5e7037450f
-      size: 351
+      md5: 05c58c3e80a72fc4918a2a9df1dc47bd
+      size: 466
+  training:
+    cmd: python pipeline/build_symbolic_sft_dataset.py
+    deps:
+    - path: data/interim/dataset_manifest.csv
+      hash: md5
+      md5: b9162b127317ecc032cb5635e40c42f1
+      size: 3110
+    - path: data/processed/assignment_costs.csv
+      hash: md5
+      md5: 18a0b76f0f4f9a2c994faf535d579c39
+      size: 7742669
+    - path: data/processed/customers.csv
+      hash: md5
+      md5: 86099449137c83ef5cfb42ec614d3ef6
+      size: 167376
+    - path: data/processed/facilities.csv
+      hash: md5
+      md5: 28dca572fdcd2039ff76112cdaf4f3e7
+      size: 12102
+    - path: data/processed/instances.csv
+      hash: md5
+      md5: 15b1568dc11209ed28f420862887ea09
+      size: 892
+    - path: pipeline/build_symbolic_sft_dataset.py
+      hash: md5
+      md5: a00b9011c25eb62ed704c2c28e3468a0
+      size: 8894
+    outs:
+    - path: data/training/symbolic_sft_manifest.json
+      hash: md5
+      md5: a73d2268074721a47965230cbfe854eb
+      size: 1425
+    - path: data/training/symbolic_sft_summary.txt
+      hash: md5
+      md5: 335c48729c5e3c4da7c1072e5cbd5e4f
+      size: 675
+    - path: data/training/symbolic_sft_test.csv
+      hash: md5
+      md5: 9e45cf1c12526054fef3866016b8915d
+      size: 988
+    - path: data/training/symbolic_sft_test.jsonl
+      hash: md5
+      md5: 3f9c9deb7f67f403aff9a43d34ec49e6
+      size: 23821
+    - path: data/training/symbolic_sft_train.csv
+      hash: md5
+      md5: ab38143ade5bcc3ba83a38ded756074e
+      size: 1623
+    - path: data/training/symbolic_sft_train.jsonl
+      hash: md5
+      md5: a048a48d1b073be04b022fe0d0ac560c
+      size: 41694
+    - path: data/training/symbolic_sft_val.csv
+      hash: md5
+      md5: 32c1e33cfdb59a53f2301c76f9dbb1c8
+      size: 984
+    - path: data/training/symbolic_sft_val.jsonl
+      hash: md5
+      md5: 041a68d165e7eba4f671380c391a5140
+      size: 23817

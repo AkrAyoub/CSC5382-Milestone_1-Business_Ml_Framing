@@ -1,5 +1,20 @@
 {
-  "test": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test.jsonl",
-  "train": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_train.jsonl",
-  "val": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone X - Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_val.jsonl"
+  "test": {
+    "jsonl_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test.jsonl",
+    "csv_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test.csv",
+    "stats_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test_stats.json",
+    "record_count": 4
+  },
+  "train": {
+    "jsonl_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_train.jsonl",
+    "csv_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_train.csv",
+    "stats_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_train_stats.json",
+    "record_count": 7
+  },
+  "val": {
+    "jsonl_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_val.jsonl",
+    "csv_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_val.csv",
+    "stats_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_val_stats.json",
+    "record_count": 4
+  }
 }

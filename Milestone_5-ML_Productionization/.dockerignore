@@ -1,0 +1,13 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.m5_runtime
+Milestone_4-Model_Dev/.zen
+Milestone_4-Model_Dev/mlruns
+Milestone_5-ML_Productionization/mlruns
+Milestone_5-ML_Productionization/.m5_runtime
+Milestone_5-ML_Productionization/.streamlit
+Milestone_5-ML_Productionization/reports

@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/Milestone_5-ML_Productionization/src:/app/Milestone_4-Model_Dev/src
+
+WORKDIR /app
+
+COPY Milestone_5-ML_Productionization/requirements.txt /tmp/m5-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/m5-requirements.txt
+
+COPY . /app
+
+EXPOSE 8000
+
+CMD ["python", "Milestone_5-ML_Productionization/scripts/run_api.py"]

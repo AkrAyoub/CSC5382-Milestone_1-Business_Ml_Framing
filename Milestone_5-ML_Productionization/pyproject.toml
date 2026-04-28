@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "m5-productionization"
+version = "0.1.0"
+description = "Milestone 5 productionization layer for the CSC5382 UFLP project"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "streamlit",
+  "requests",
+  "httpx",
+  "pytest",
+  "pytest-cov",
+  "pandas",
+  "mlflow",
+  "ortools",
+  "openai",
+  "pydantic",
+  "pyyaml",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -14,14 +14,16 @@ M4_REFERENCE_DIR = M4_DATA_DIR / "reference"
 M4_DATASETS_DIR = M4_DATA_DIR / "datasets"
 M4_SPLITS_DIR = M4_DATA_DIR / "splits"
 M4_SFT_DIR = M4_DATA_DIR / "sft"
+M4_MODELS_DIR = M4_DATA_DIR / "models"
+M4_TRAINING_RUNS_DIR = M4_DATA_DIR / "training_runs"
 M4_ARTIFACTS_DIR = M4_ROOT / "artifacts"
 M4_REPORTS_DIR = M4_ROOT / "reports"
 M4_GENERATED_CODE_DIR = M4_REPORTS_DIR / "generated_code"
 M4_EVAL_RESULTS_DIR = M4_REPORTS_DIR / "evaluation"
 M4_CONFIGS_DIR = M4_ROOT / "configs"
-M4_MLFLOW_DIR = M4_ROOT / "mlruns"
-M4_ZEN_CONFIG_DIR = M4_ROOT / ".zen"
-M4_ZEN_LOCAL_STORE_DIR = M4_ROOT.parent.parent / ".zen_local"
+M4_MLFLOW_DIR = Path(M4_ROOT.anchor) / "csc5382_m4_mlruns"
+M4_ZEN_CONFIG_DIR = M4_ROOT / ".zen_m4_runtime"
+M4_ZEN_LOCAL_STORE_DIR = Path(M4_ROOT.anchor) / "csc5382_m4_zen_store"
 
 M3_FEATURES_DIR = M3_ROOT / "data" / "features"
 M3_INTERIM_DIR = M3_ROOT / "data" / "interim"
@@ -35,6 +37,8 @@ def ensure_runtime_dirs() -> None:
         M4_DATASETS_DIR,
         M4_SPLITS_DIR,
         M4_SFT_DIR,
+        M4_MODELS_DIR,
+        M4_TRAINING_RUNS_DIR,
         M4_ARTIFACTS_DIR,
         M4_REPORTS_DIR,
         M4_GENERATED_CODE_DIR,

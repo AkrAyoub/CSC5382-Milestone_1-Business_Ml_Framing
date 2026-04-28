@@ -5,6 +5,7 @@ from uuid import UUID
 
 try:
     from .build_feature_store import run_feature_store_build
+    from .build_symbolic_sft_dataset import run_symbolic_sft_dataset_build
     from .common import write_json_file, write_text_file
     from .engineer_features import run_feature_engineering
     from .ingest_data import run_ingestion
@@ -15,6 +16,7 @@ except ImportError:
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from pipeline.build_feature_store import run_feature_store_build
+    from pipeline.build_symbolic_sft_dataset import run_symbolic_sft_dataset_build
     from pipeline.common import write_json_file, write_text_file
     from pipeline.engineer_features import run_feature_engineering
     from pipeline.ingest_data import run_ingestion
@@ -92,7 +94,7 @@ if step is not None:
         return run_feature_engineering()
 
     @step(enable_cache=False)
-    def validation_step(
+    def symbolic_sft_step(
         ingest_summary: dict[str, Any],
         preprocess_summary: dict[str, Any],
         feature_summary: dict[str, Any],
@@ -100,6 +102,19 @@ if step is not None:
         _ = ingest_summary
         _ = preprocess_summary
         _ = feature_summary
+        return run_symbolic_sft_dataset_build()
+
+    @step(enable_cache=False)
+    def validation_step(
+        ingest_summary: dict[str, Any],
+        preprocess_summary: dict[str, Any],
+        feature_summary: dict[str, Any],
+        symbolic_sft_summary: dict[str, Any],
+    ) -> dict[str, Any]:
+        _ = ingest_summary
+        _ = preprocess_summary
+        _ = feature_summary
+        _ = symbolic_sft_summary
         return run_validation()
 
     @step(enable_cache=False)
@@ -118,7 +133,8 @@ if pipeline is not None:
         ingest_summary = ingest_step()
         preprocess_summary = preprocess_step(ingest_summary)
         feature_summary = feature_engineering_step(preprocess_summary)
-        validation_summary = validation_step(ingest_summary, preprocess_summary, feature_summary)
+        symbolic_sft_summary = symbolic_sft_step(ingest_summary, preprocess_summary, feature_summary)
+        validation_summary = validation_step(ingest_summary, preprocess_summary, feature_summary, symbolic_sft_summary)
         publish_feature_store_step(feature_summary, validation_summary)
 
 
@@ -126,13 +142,13 @@ def _configure_zenml_runtime() -> None:
     for path in (ZEN_CONFIG_DIR, ZEN_LOCAL_STORE_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
-    os.environ.setdefault("ZENML_CONFIG_PATH", str(ZEN_CONFIG_DIR))
-    os.environ.setdefault("ZENML_LOCAL_STORES_PATH", str(ZEN_LOCAL_STORE_DIR))
-    os.environ.setdefault("ZENML_DEFAULT_USER_NAME", "default")
-    os.environ.setdefault("ZENML_DEFAULT_USER_PASSWORD", "default")
-    os.environ.setdefault("ZENML_DISABLE_INTERACTIVE_INPUT", "true")
-    os.environ.setdefault("ZENML_DISABLE_PIPELINE_LOGS_STORAGE", "true")
-    os.environ.setdefault("ZENML_DISABLE_STEP_LOGS_STORAGE", "true")
+    os.environ["ZENML_CONFIG_PATH"] = str(ZEN_CONFIG_DIR)
+    os.environ["ZENML_LOCAL_STORES_PATH"] = str(ZEN_LOCAL_STORE_DIR)
+    os.environ["ZENML_DEFAULT_USER_NAME"] = "default"
+    os.environ["ZENML_DEFAULT_USER_PASSWORD"] = "default"
+    os.environ["ZENML_DISABLE_INTERACTIVE_INPUT"] = "true"
+    os.environ["ZENML_DISABLE_PIPELINE_LOGS_STORAGE"] = "true"
+    os.environ["ZENML_DISABLE_STEP_LOGS_STORAGE"] = "true"
 
 
 def _coerce_uuid_config_values() -> None:

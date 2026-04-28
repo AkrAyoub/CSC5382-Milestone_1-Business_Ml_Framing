@@ -1,0 +1,37 @@
+{
+  "split": "train",
+  "record_count": 7,
+  "instance_ids": [
+    "cap101",
+    "cap102",
+    "cap131",
+    "cap132",
+    "cap71",
+    "cap72",
+    "capa"
+  ],
+  "facility_count_min": 16,
+  "facility_count_max": 100,
+  "customer_count_min": 50,
+  "customer_count_max": 1000,
+  "schema_fields": [
+    "instance_id",
+    "instance_path",
+    "split",
+    "facility_count_m",
+    "customer_count_n",
+    "best_known_objective",
+    "reference_objective",
+    "reference_gap_percent",
+    "prompt_template",
+    "source",
+    "validation_status",
+    "execution_status",
+    "exact_match_with_baseline",
+    "repair_notes",
+    "prompt",
+    "response",
+    "text",
+    "messages"
+  ]
+}

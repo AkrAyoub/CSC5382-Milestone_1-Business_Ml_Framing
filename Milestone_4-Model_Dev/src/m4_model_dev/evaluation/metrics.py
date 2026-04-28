@@ -37,6 +37,8 @@ def aggregate_candidate_split_metrics(results_df: pd.DataFrame) -> pd.DataFrame:
                 "candidate_kind": representative.get("candidate_kind", ""),
                 "backend_name": representative.get("backend_name", ""),
                 "model_name": representative.get("model_name", ""),
+                "generation_backend_name": representative.get("generation_backend_name", ""),
+                "generation_model_name": representative.get("generation_model_name", ""),
                 "prompt_template": representative.get("prompt_template", ""),
                 "split": split_name,
                 "attempted_instances": attempted,

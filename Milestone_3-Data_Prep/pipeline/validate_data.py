@@ -34,6 +34,7 @@ try:
         RAW_DATA_DIR,
         SCHEMA_DIR,
         STATS_DIR,
+        TRAINING_DATA_DIR,
         VALIDATION_DIR,
     )
 except ImportError:
@@ -45,6 +46,7 @@ except ImportError:
         RAW_DATA_DIR,
         SCHEMA_DIR,
         STATS_DIR,
+        TRAINING_DATA_DIR,
         VALIDATION_DIR,
     )
 
@@ -261,10 +263,89 @@ def validate_feature_consistency(
     return anomalies
 
 
+def read_jsonl_rows(path: Path) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    if not path.exists():
+        return rows
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        rows.append(__import__("json").loads(stripped))
+    return rows
+
+
+def _normalize_training_rows(rows: list[dict[str, object]]) -> list[dict[str, str]]:
+    normalized: list[dict[str, str]] = []
+    for row in rows:
+        normalized.append({str(key): "" if value is None else str(value) for key, value in row.items()})
+    return normalized
+
+
+def validate_training_consistency(
+    training_files: dict[str, list[dict[str, object]]],
+    instances: list[dict[str, str]],
+    training_manifest: dict[str, object],
+) -> list[str]:
+    anomalies: list[str] = []
+    known_instances = {row["instance_id"] for row in instances}
+    expected_split_names = {"train", "val", "test"}
+    observed_split_names = set()
+    seen_instance_ids: set[str] = set()
+
+    for file_name, rows in training_files.items():
+        split_name = file_name.removeprefix("symbolic_sft_").removesuffix(".jsonl")
+        observed_split_names.add(split_name)
+        manifest_entry = training_manifest.get(split_name, {}) if isinstance(training_manifest, dict) else {}
+        manifest_count = manifest_entry.get("record_count")
+        if manifest_count is not None and int(manifest_count) != len(rows):
+            anomalies.append(
+                f"training consistency: manifest record_count for split '{split_name}' is {manifest_count}, expected {len(rows)}"
+            )
+
+        for idx, row in enumerate(rows, start=1):
+            instance_id = str(row.get("instance_id", ""))
+            if instance_id not in known_instances:
+                anomalies.append(
+                    f"training consistency: {file_name} row {idx} references unknown instance_id '{instance_id}'"
+                )
+            if instance_id in seen_instance_ids:
+                anomalies.append(
+                    f"training consistency: duplicate instance_id '{instance_id}' across symbolic SFT splits"
+                )
+            seen_instance_ids.add(instance_id)
+
+            if str(row.get("split", "")) != split_name:
+                anomalies.append(
+                    f"training consistency: {file_name} row {idx} has split='{row.get('split')}', expected '{split_name}'"
+                )
+            if str(row.get("validation_status", "")) != "passed":
+                anomalies.append(
+                    f"training consistency: {file_name} row {idx} has validation_status='{row.get('validation_status')}', expected 'passed'"
+                )
+            if str(row.get("execution_status", "")) != "passed":
+                anomalies.append(
+                    f"training consistency: {file_name} row {idx} has execution_status='{row.get('execution_status')}', expected 'passed'"
+                )
+
+    if observed_split_names != expected_split_names:
+        anomalies.append(
+            f"training consistency: observed splits {sorted(observed_split_names)} != expected {sorted(expected_split_names)}"
+        )
+
+    if len(seen_instance_ids) != len(instances):
+        anomalies.append(
+            f"training consistency: symbolic SFT coverage is {len(seen_instance_ids)} instances, expected {len(instances)}"
+        )
+
+    return anomalies
+
+
 def run_validation() -> dict[str, object]:
     raw_schema = read_json_file(SCHEMA_DIR / "raw_schema.json")
     processed_schema = read_json_file(SCHEMA_DIR / "processed_schema.json")
     feature_schema = read_json_file(SCHEMA_DIR / "feature_schema.json")
+    training_schema = read_json_file(SCHEMA_DIR / "training_schema.json")
 
     raw_anomalies, raw_stats = validate_raw_layer(raw_schema)
 
@@ -276,6 +357,10 @@ def run_validation() -> dict[str, object]:
     instance_features = read_csv_rows(FEATURES_DATA_DIR / "instance_features.csv")
     facility_features = read_csv_rows(FEATURES_DATA_DIR / "facility_features.csv")
     customer_features = read_csv_rows(FEATURES_DATA_DIR / "customer_features.csv")
+    training_manifest = read_json_file(TRAINING_DATA_DIR / "symbolic_sft_manifest.json")
+    symbolic_sft_train = read_jsonl_rows(TRAINING_DATA_DIR / "symbolic_sft_train.jsonl")
+    symbolic_sft_val = read_jsonl_rows(TRAINING_DATA_DIR / "symbolic_sft_val.jsonl")
+    symbolic_sft_test = read_jsonl_rows(TRAINING_DATA_DIR / "symbolic_sft_test.jsonl")
 
     processed_files = {
         "instances.csv": instances,
@@ -289,11 +374,18 @@ def run_validation() -> dict[str, object]:
         "facility_features.csv": facility_features,
         "customer_features.csv": customer_features
     }
+    training_files = {
+        "symbolic_sft_train.jsonl": symbolic_sft_train,
+        "symbolic_sft_val.jsonl": symbolic_sft_val,
+        "symbolic_sft_test.jsonl": symbolic_sft_test,
+    }
 
     processed_anomalies: list[str] = []
     feature_anomalies: list[str] = []
+    training_anomalies: list[str] = []
     processed_stats: dict = {}
     feature_stats: dict = {}
+    training_stats: dict = {}
 
     for file_name, rows in processed_files.items():
         anomalies, stats = validate_file_against_schema(file_name, rows, processed_schema)
@@ -304,6 +396,15 @@ def run_validation() -> dict[str, object]:
         anomalies, stats = validate_file_against_schema(file_name, rows, feature_schema)
         feature_anomalies.extend(anomalies)
         feature_stats[file_name] = stats
+
+    for file_name, rows in training_files.items():
+        anomalies, stats = validate_file_against_schema(
+            file_name,
+            _normalize_training_rows(rows),
+            training_schema,
+        )
+        training_anomalies.extend(anomalies)
+        training_stats[file_name] = stats
 
     processed_consistency_anomalies = validate_processed_consistency(
         instances, facilities, customers, assignments
@@ -317,13 +418,20 @@ def run_validation() -> dict[str, object]:
         facilities,
         customers
     )
+    training_consistency_anomalies = validate_training_consistency(
+        training_files,
+        instances,
+        training_manifest,
+    )
 
     all_anomalies = (
         raw_anomalies
         + processed_anomalies
         + feature_anomalies
+        + training_anomalies
         + processed_consistency_anomalies
         + feature_consistency_anomalies
+        + training_consistency_anomalies
     )
 
     summary = {
@@ -342,6 +450,11 @@ def run_validation() -> dict[str, object]:
             "instance_features": len(instance_features),
             "facility_features": len(facility_features),
             "customer_features": len(customer_features)
+        },
+        "training_layer": {
+            "symbolic_sft_train": len(symbolic_sft_train),
+            "symbolic_sft_val": len(symbolic_sft_val),
+            "symbolic_sft_test": len(symbolic_sft_test),
         }
     }
 
@@ -355,11 +468,13 @@ def run_validation() -> dict[str, object]:
     write_json_file(STATS_DIR / "raw_statistics.json", raw_stats)
     write_json_file(STATS_DIR / "processed_statistics.json", processed_stats)
     write_json_file(STATS_DIR / "feature_statistics.json", feature_stats)
+    write_json_file(STATS_DIR / "training_statistics.json", training_stats)
 
     print("=== Milestone 3: Full Data Validation Summary ===")
     print(f"Raw instance count: {raw_stats['instance_count']}")
     print(f"Processed rows: instances={len(instances)}, facilities={len(facilities)}, customers={len(customers)}, assignment_costs={len(assignments)}")
     print(f"Feature rows: instance_features={len(instance_features)}, facility_features={len(facility_features)}, customer_features={len(customer_features)}")
+    print(f"Training rows: symbolic_sft_train={len(symbolic_sft_train)}, symbolic_sft_val={len(symbolic_sft_val)}, symbolic_sft_test={len(symbolic_sft_test)}")
     print(f"Anomalies found: {len(all_anomalies)}")
     print(f"Validation status: {summary['status']}")
     print("\nValidation artifacts:")
@@ -369,6 +484,7 @@ def run_validation() -> dict[str, object]:
     print(f"- {STATS_DIR / 'raw_statistics.json'}")
     print(f"- {STATS_DIR / 'processed_statistics.json'}")
     print(f"- {STATS_DIR / 'feature_statistics.json'}")
+    print(f"- {STATS_DIR / 'training_statistics.json'}")
 
     return {
         "status": summary["status"],
@@ -381,11 +497,15 @@ def run_validation() -> dict[str, object]:
         "feature_instances": len(instance_features),
         "feature_facilities": len(facility_features),
         "feature_customers": len(customer_features),
+        "training_train": len(symbolic_sft_train),
+        "training_val": len(symbolic_sft_val),
+        "training_test": len(symbolic_sft_test),
         "validation_summary_path": str(VALIDATION_DIR / "validation_summary.json"),
         "anomalies_path": str(VALIDATION_DIR / "anomalies.json"),
         "raw_stats_path": str(STATS_DIR / "raw_statistics.json"),
         "processed_stats_path": str(STATS_DIR / "processed_statistics.json"),
         "feature_stats_path": str(STATS_DIR / "feature_statistics.json"),
+        "training_stats_path": str(STATS_DIR / "training_statistics.json"),
     }
 
 

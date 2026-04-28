@@ -181,13 +181,13 @@ def _configure_zenml_runtime() -> None:
     for path in ensure_paths:
         path.mkdir(parents=True, exist_ok=True)
 
-    os.environ.setdefault("ZENML_CONFIG_PATH", str(M4_ZEN_CONFIG_DIR))
-    os.environ.setdefault("ZENML_LOCAL_STORES_PATH", str(M4_ZEN_LOCAL_STORE_DIR))
-    os.environ.setdefault("ZENML_DEFAULT_USER_NAME", "default")
-    os.environ.setdefault("ZENML_DEFAULT_USER_PASSWORD", "default")
-    os.environ.setdefault("ZENML_DISABLE_INTERACTIVE_INPUT", "true")
-    os.environ.setdefault("ZENML_DISABLE_PIPELINE_LOGS_STORAGE", "true")
-    os.environ.setdefault("ZENML_DISABLE_STEP_LOGS_STORAGE", "true")
+    os.environ["ZENML_CONFIG_PATH"] = str(M4_ZEN_CONFIG_DIR)
+    os.environ["ZENML_LOCAL_STORES_PATH"] = str(M4_ZEN_LOCAL_STORE_DIR)
+    os.environ["ZENML_DEFAULT_USER_NAME"] = "default"
+    os.environ["ZENML_DEFAULT_USER_PASSWORD"] = "default"
+    os.environ["ZENML_DISABLE_INTERACTIVE_INPUT"] = "true"
+    os.environ["ZENML_DISABLE_PIPELINE_LOGS_STORAGE"] = "true"
+    os.environ["ZENML_DISABLE_STEP_LOGS_STORAGE"] = "true"
 
 
 def run_zenml_training_pipeline(config_path: Path | None = None):
