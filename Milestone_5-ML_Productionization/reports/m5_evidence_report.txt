@@ -1,6 +1,6 @@
 Milestone 5 Evidence Report
 
-Generated at: 2026-04-30T07:07:39.454217+00:00
+Generated at: 2026-04-30T12:11:36.990889+00:00
 
 Requirement coverage:
 - architecture_drawing: True
@@ -22,10 +22,10 @@ Verification commands:
 
 Serving pipeline:
 - success: True
-- load_best_model: SUCCESS (0.84s)
-- validate_api: SUCCESS (1.30s)
-- run_api_tests: SUCCESS (0.33s)
-- register_serving: SUCCESS (17.38s)
+- load_best_model: SUCCESS (0.00s)
+- validate_api: SUCCESS (0.39s)
+- run_api_tests: SUCCESS (0.21s)
+- register_serving: SUCCESS (11.48s)
 
 Live fine-tuned serving smoke:
 - overall_status: SUCCESS
@@ -34,7 +34,7 @@ Live fine-tuned serving smoke:
 - model_name: ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH
 - gap_vs_baseline_pct: 0.0
 
-Manual steps required for public hosting:
-- To publish the Hugging Face Space, set HF_TOKEN and HF_SPACE_ID, then run M5_DEPLOY_HF=1 python scripts/deploy_huggingface_space.py.
-- To make the deployed Space support live LLM/fine-tuned mode, add OPENAI_API_KEY as a Hugging Face Space secret.
-- To activate the VM/DigitalOcean CD path, configure M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets.
+Deployment notes:
+- The Hugging Face Space deployment is prepared through scripts/deploy_huggingface_space.py and the CI/CD workflow.
+- The hosted deployment requires OPENAI_API_KEY as a Space secret for live fine-tuned LLM mode.
+- The optional VM/DigitalOcean CD path uses M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets.

@@ -26,15 +26,18 @@ def _default_experiment_artifact_uri(experiment_name: str) -> str:
     return artifact_root.resolve().as_uri()
 
 
-def configure_mlflow():
+def configure_mlflow(*, create_client: bool = False):
     import mlflow
-    from mlflow.tracking import MlflowClient
 
     ensure_runtime_dirs()
     M5_MLFLOW_DIR.mkdir(parents=True, exist_ok=True)
     mlflow.set_tracking_uri(get_tracking_uri())
     mlflow.set_registry_uri(get_tracking_uri())
-    return mlflow, MlflowClient()
+    if create_client:
+        from mlflow.tracking import MlflowClient
+
+        return mlflow, MlflowClient()
+    return mlflow, None
 
 
 def _build_pyfunc_model_class(mlflow):

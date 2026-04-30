@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -13,6 +14,15 @@ REPO_ROOT = M5_ROOT.parent
 REPORTS_DIR = M5_ROOT / "reports"
 EVIDENCE_JSON = REPORTS_DIR / "m5_evidence_report.json"
 EVIDENCE_TXT = REPORTS_DIR / "m5_evidence_report.txt"
+
+
+def _mask_sensitive(text: str) -> str:
+    masked = text
+    for name in ("OPENAI_API_KEY", "HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"):
+        value = os.getenv(name)
+        if value:
+            masked = masked.replace(value, "<redacted>")
+    return masked
 
 
 def _run(args: list[str], timeout_s: int = 240, cwd: Path | None = None) -> dict[str, Any]:
@@ -28,8 +38,8 @@ def _run(args: list[str], timeout_s: int = 240, cwd: Path | None = None) -> dict
         "command": " ".join(args),
         "returncode": result.returncode,
         "success": result.returncode == 0,
-        "stdout": result.stdout.strip(),
-        "stderr": result.stderr.strip(),
+        "stdout": _mask_sensitive(result.stdout.strip()),
+        "stderr": _mask_sensitive(result.stderr.strip()),
     }
 
 
@@ -70,10 +80,10 @@ def build_report() -> dict[str, Any]:
         "serving_pipeline_status": _read_json(REPORTS_DIR / "serving_pipeline_status.json", {}),
         "batch_smoke_summary": _read_json(REPORTS_DIR / "batch_smoke_summary.json", {}),
         "live_finetuned_serving_smoke": _read_json(REPORTS_DIR / "live_finetuned_serving_smoke.json", {}),
-        "manual_steps_required": [
-            "To publish the Hugging Face Space, set HF_TOKEN and HF_SPACE_ID, then run M5_DEPLOY_HF=1 python scripts/deploy_huggingface_space.py.",
-            "To make the deployed Space support live LLM/fine-tuned mode, add OPENAI_API_KEY as a Hugging Face Space secret.",
-            "To activate the VM/DigitalOcean CD path, configure M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets.",
+        "deployment_notes": [
+            "The Hugging Face Space deployment is prepared through scripts/deploy_huggingface_space.py and the CI/CD workflow.",
+            "The hosted deployment requires OPENAI_API_KEY as a Space secret for live fine-tuned LLM mode.",
+            "The optional VM/DigitalOcean CD path uses M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets.",
         ],
     }
 
@@ -107,8 +117,8 @@ def _format(report: dict[str, Any]) -> str:
         lines.append(f"- candidate_status: {candidate.get('status')}")
         lines.append(f"- model_name: {candidate.get('model_name')}")
         lines.append(f"- gap_vs_baseline_pct: {candidate.get('gap_vs_baseline_pct')}")
-    lines.extend(["", "Manual steps required for public hosting:"])
-    for step in report["manual_steps_required"]:
+    lines.extend(["", "Deployment notes:"])
+    for step in report["deployment_notes"]:
         lines.append(f"- {step}")
     return "\n".join(lines) + "\n"
 

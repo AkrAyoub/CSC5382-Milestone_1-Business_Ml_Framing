@@ -1,0 +1,42 @@
+Milestone 3 Pipeline Results
+
+Generated at: 2026-04-30T12:06:12.396561+00:00
+
+Data artifacts:
+- Raw benchmark instances: 15
+- Processed instances: 15
+- Processed facilities: 664
+- Processed customers: 3600
+- Assignment-cost rows: 318200
+- Instance feature rows: 15
+- Facility feature rows: 664
+- Customer feature rows: 3600
+- Symbolic SFT splits: train=7, val=4, test=4
+
+Validation:
+- Status: passed
+- Anomaly count: 0
+
+DVC:
+- Status command passed: True
+- Pipeline up to date: True
+- DAG command passed: True
+
+Feature store:
+- Feast historical retrieval demo passed: True
+
+ZenML:
+- ZenML pipeline success: True
+- Details: ZenML pipeline executed successfully.
+
+DVC status output:
+Data and pipelines are up to date.
+
+Feast demo output:
+=== Historical retrieval demo ===
+  instance_id           event_timestamp  ...  avg_fixed_cost  avg_assignment_cost
+0       cap71 2026-03-21 00:00:00+00:00  ...         7031.25         44663.396562
+1      cap101 2026-03-21 00:00:00+00:00  ...         7200.00         48600.641600
+2        capa 2026-03-21 00:00:00+00:00  ...      1796119.92         29807.885489
+
+[3 rows x 6 columns]

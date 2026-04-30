@@ -2,10 +2,10 @@
   "name": "llm_robust_prompt_v1",
   "kind": "llm",
   "backend": "self_hosted_openai",
-  "model_name": "llama-3.1-8b-instant",
+  "model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
   "prompt_template": "robust_v1",
   "temperature": 0.0,
   "max_tokens": 850,
   "enabled": true,
-  "notes": "Improved robust parser prompt evaluated against a self-hosted OpenAI-compatible code model runtime. Runtime endpoint: https://api.groq.com/openai/v1."
+  "notes": "Improved robust parser prompt evaluated against a self-hosted OpenAI-compatible code model runtime."
 }

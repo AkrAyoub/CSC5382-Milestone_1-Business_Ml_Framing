@@ -2,6 +2,10 @@
 
 This milestone productionizes the Milestone 1 system by turning the validated UFLP workflow into a served application. The production-safe default remains the deterministic CBC baseline, while the LLM-assisted symbolic path is exposed as an optional runtime for side-by-side evaluation rather than as the only production path.
 
+The production design is LLMFP-inspired rather than a full general-purpose LLMFP implementation. It applies the part of the paper that matters most for this project: planning is reduced to constrained optimization, the LLM generates formal solver-compatible code, and the deterministic solver plus validation layer verifies feasibility, objective quality, and agreement with the baseline. This is enough for the milestone requirements because Milestone 5 grades architecture, serving modes, service development, client development, containerization, CI/CD, hosting, and serving runtime, not a new general-purpose planning research framework.
+
+Candidate selection note: the hosted app exposes candidates from the project candidate registry, not only from the MLflow Model Registry. The current production-safe default is still `baseline`; the optional LLM path defaults to `openai_gpt41_mini_finetuned` because it is the fine-tuned Milestone 4 artifact and has saved live serving smoke evidence. The Milestone 4 comparison selected `openai_gpt41_mini_base` after a metrics tie, so the fine-tuned production choice should be read as a deployment preference, not as evidence that the base model failed.
+
 ### Table of Contents
 
 - [1. Setup, Usage, and Deployment Guide](#1-setup-usage-and-deployment-guide)
@@ -30,7 +34,7 @@ This milestone productionizes the Milestone 1 system by turning the validated UF
 ## Quick Links
 
 - Live Hugging Face Space: https://huggingface.co/spaces/AkrAyoub/uflp-production-solver
-- Architecture drawing: [assets/architecture.png](assets/architecture.png)
+- Architecture drawing: [assets/architecture-2.png](assets/architecture-2.png)
 - API app: [src/m5_productionization/api/main.py](src/m5_productionization/api/main.py)
 - Service layer: [src/m5_productionization/service.py](src/m5_productionization/service.py)
 - Runtime adapter: [src/m5_productionization/runtime.py](src/m5_productionization/runtime.py)
@@ -237,7 +241,7 @@ This milestone turns the project into a served application while preserving the 
 
 ### 2.1 ML System Architecture
 
-The architecture is documented in [assets/architecture.png](assets/architecture.png). The key production components are:
+The architecture is documented in [assets/architecture-2.png](assets/architecture-2.png). The key production components are:
 
 - a machine-facing FastAPI service
 - a human-facing Streamlit client

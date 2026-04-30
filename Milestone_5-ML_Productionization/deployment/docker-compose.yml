@@ -26,6 +26,7 @@ services:
     environment:
       M5_API_HOST: 0.0.0.0
       M5_API_PORT: 8000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SELF_HOSTED_OPENAI_BASE_URL: ${SELF_HOSTED_OPENAI_BASE_URL:-http://llm-server:8000/v1}
       SELF_HOSTED_OPENAI_API_KEY: ${SELF_HOSTED_OPENAI_API_KEY:-local-dev-key}
       SELF_HOSTED_MODEL_NAME: ${SELF_HOSTED_MODEL_NAME:-Qwen/Qwen2.5-Coder-7B-Instruct}

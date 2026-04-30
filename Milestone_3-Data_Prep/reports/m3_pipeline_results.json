@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-04-30T12:06:12.396561+00:00",
+  "validation": {
+    "status": "passed",
+    "anomaly_count": 0,
+    "raw_layer": {
+      "instance_count": 15
+    },
+    "processed_layer": {
+      "instances": 15,
+      "facilities": 664,
+      "customers": 3600,
+      "assignment_costs": 318200
+    },
+    "feature_layer": {
+      "instance_features": 15,
+      "facility_features": 664,
+      "customer_features": 3600
+    },
+    "training_layer": {
+      "symbolic_sft_train": 7,
+      "symbolic_sft_val": 4,
+      "symbolic_sft_test": 4
+    }
+  },
+  "anomalies": {
+    "anomalies": []
+  },
+  "dvc": {
+    "status": {
+      "command": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\.venv\\Scripts\\python.exe -m dvc status",
+      "returncode": 0,
+      "stdout": "Data and pipelines are up to date.",
+      "stderr": "",
+      "success": true
+    },
+    "dag": {
+      "command": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\.venv\\Scripts\\python.exe -m dvc dag",
+      "returncode": 0,
+      "stdout": "+--------+                              \n                                  | ingest |***                           \n                               ***+--------+   ******                     \n                           ****             **       ******               \n                       ****                   **           *****          \n                     **                         **              ******    \n          +------------+                          *                   *** \n          | preprocess |**                        *                     * \n          +------------+  ******                  *                     * \n           **         **        *****             *                     * \n         **             **           ******       *                     * \n        *                 **               ***    *                     * \n+----------+                **              +----------+              *** \n| features |***               *             | training |        ******    \n+----------+   ******          ***          +----------+   *****          \n                     *****        *         ***       *****               \n                          ******   ***     *    ******                    \n                                ***   *  **  ***                          \n                                  +----------+                            \n                                  | validate |                            \n                                  +----------+",
+      "stderr": "",
+      "success": true
+    }
+  },
+  "feast": {
+    "historical_retrieval_demo": {
+      "command": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\.venv\\Scripts\\python.exe feature_repo/run_feature_store_demo.py",
+      "returncode": 0,
+      "stdout": "=== Historical retrieval demo ===\n  instance_id           event_timestamp  ...  avg_fixed_cost  avg_assignment_cost\n0       cap71 2026-03-21 00:00:00+00:00  ...         7031.25         44663.396562\n1      cap101 2026-03-21 00:00:00+00:00  ...         7200.00         48600.641600\n2        capa 2026-03-21 00:00:00+00:00  ...      1796119.92         29807.885489\n\n[3 rows x 6 columns]",
+      "stderr": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\.venv\\Lib\\site-packages\\torch\\cuda\\__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]",
+      "success": true
+    }
+  },
+  "zenml": {
+    "success": true,
+    "details": "ZenML pipeline executed successfully."
+  },
+  "summary": {
+    "raw_instances": 15,
+    "processed_instances": 15,
+    "processed_facilities": 664,
+    "processed_customers": 3600,
+    "assignment_costs": 318200,
+    "instance_features": 15,
+    "facility_features": 664,
+    "customer_features": 3600,
+    "symbolic_sft_train": 7,
+    "symbolic_sft_val": 4,
+    "symbolic_sft_test": 4,
+    "anomaly_count": 0,
+    "dvc_up_to_date": true,
+    "feast_demo_passed": true,
+    "zenml_success": true
+  }
+}

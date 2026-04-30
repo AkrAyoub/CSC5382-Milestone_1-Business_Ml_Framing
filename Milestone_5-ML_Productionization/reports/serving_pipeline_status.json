@@ -6,7 +6,7 @@
     {
       "name": "load_best_model",
       "status": "SUCCESS",
-      "duration_s": 0.8369889259338379,
+      "duration_s": 0.0003132820129394531,
       "details": {
         "safe_default_mode": "baseline",
         "default_llm_candidate_name": "openai_gpt41_mini_finetuned",
@@ -29,19 +29,19 @@
     {
       "name": "validate_api",
       "status": "SUCCESS",
-      "duration_s": 1.2996056079864502,
+      "duration_s": 0.549849271774292,
       "details": {
         "health_status_code": 200,
         "runtime_status_code": 200,
         "predict_status_code": 200,
-        "latency_ms": 1299.304485321045,
+        "latency_ms": 549.6125221252441,
         "baseline_objective": 932615.75
       }
     },
     {
       "name": "run_api_tests",
       "status": "SUCCESS",
-      "duration_s": 0.3328995704650879,
+      "duration_s": 0.33939576148986816,
       "details": {
         "integration_tests_total": 12,
         "integration_tests_passed": 12,
@@ -106,7 +106,7 @@
           {
             "name": "batch solve succeeds",
             "passed": true,
-            "detail": "{'batch_id': '2f2ca7633374', 'requested_mode': 'baseline', 'response_count': 2, 'success_count': 2, 'partial_count': 0, 'failed_count': 0, 'responses': [{'request_id': 'f4f684ec932e', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap71', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 932615.75, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 932615.75, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.07668256759643555, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12], 'assignment_count': 50, 'assignments_preview': [7, 11, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 8, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}, {'request_id': '94346cfb82cd', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap72', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 977799.4, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 977799.4, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.08777356147766113, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 10, 12], 'assignment_count': 50, 'assignments_preview': [7, 6, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 10, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}]}"
+            "detail": "{'batch_id': '8b81edf215d3', 'requested_mode': 'baseline', 'response_count': 2, 'success_count': 2, 'partial_count': 0, 'failed_count': 0, 'responses': [{'request_id': '4a780d86c776', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap71', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 932615.75, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 932615.75, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.07715773582458496, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12], 'assignment_count': 50, 'assignments_preview': [7, 11, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 8, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}, {'request_id': 'cea3004e3a21', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap72', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 977799.4, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 977799.4, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.06375288963317871, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 10, 12], 'assignment_count': 50, 'assignments_preview': [7, 6, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 10, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}]}"
           }
         ]
       }
@@ -114,7 +114,7 @@
     {
       "name": "register_serving",
       "status": "SUCCESS",
-      "duration_s": 17.384972095489502,
+      "duration_s": 11.746450901031494,
       "details": {
         "mlflow_model_uri": "file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model",
         "registered_model_name": "",

@@ -26,6 +26,10 @@
 
 This milestone no longer trains a facility-level classifier. It now evaluates the actual Milestone 1 modeling component: an `LLM-as-modeler` system that generates solver-compatible UFLP code, executes it in a sandbox, and compares it against a deterministic CBC reference solver.
 
+This is intentionally an LLMFP-inspired implementation rather than a full general-purpose LLMFP framework. The paper's central principle is preserved: the LLM is not trusted to optimize directly; it is used to produce formal solver-compatible code, and the deterministic solver plus validation layer decides whether the output is feasible and optimal. A full Definer/Formulator/Self-Assess pipeline would be valuable future work, but for the course milestones the required ML artifact is the UFLP symbolic-generation model, its evaluation, experiment tracking, model versioning, and MLOps integration.
+
+Model selection note: the project has two separate registries. The application candidate registry lists runnable candidates such as `openai_gpt41_mini_base` and `openai_gpt41_mini_finetuned`. The MLflow Model Registry is optional infrastructure for registering packaged serving artifacts. A model can appear in the hosted app candidate list even if the Milestone 5 MLflow runtime package was not registered in the MLflow Model Registry.
+
 The milestone supports three local/demo execution paths plus one optional heavy training path:
 
 - local single-candidate evaluation through MLflow

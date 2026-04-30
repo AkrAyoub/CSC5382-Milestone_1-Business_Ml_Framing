@@ -36,6 +36,7 @@ Recommended production deployment flow:
 2. Install Docker Engine and Docker Compose.
 3. Copy the repository to the host.
 4. Export the required environment variables:
+   - `OPENAI_API_KEY` to enable the hosted OpenAI fine-tuned symbolic solver path inside the API container
    - `SELF_HOSTED_MODEL_NAME` for the served base model, e.g. `Qwen/Qwen2.5-Coder-7B-Instruct`
    - `SELF_HOSTED_OPENAI_API_KEY` if the local runtime should enforce an API key
    - `M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME` if the fine-tuned candidate slot should point at a different self-hosted model/adapters path
