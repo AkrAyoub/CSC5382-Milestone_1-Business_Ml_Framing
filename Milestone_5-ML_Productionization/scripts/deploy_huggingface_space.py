@@ -8,7 +8,11 @@ from m5_productionization.paths import M5_ROOT, REPO_ROOT
 
 
 SPACE_TEMPLATE_DIR = M5_ROOT / "deployment" / "huggingface_space"
-SPACE_BUILD_DIR = Path(M5_ROOT.anchor) / "csc5382_m5_hf_space_build"
+SPACE_BUILD_DIR = (
+    Path(M5_ROOT.anchor) / "csc5382_m5_hf_space_build"
+    if os.name == "nt"
+    else M5_ROOT / ".m5_runtime" / "hf_space_build"
+)
 
 
 def _ignore_runtime_files(_directory: str, names: list[str]) -> set[str]:
