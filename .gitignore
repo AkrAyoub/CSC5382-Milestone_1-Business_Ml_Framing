@@ -33,6 +33,7 @@ Milestone_4-Model_Dev/data/training_runs/
 Milestone_4-Model_Dev/artifacts/*.joblib
 Milestone_4-Model_Dev/artifacts/*.npz
 Milestone_4-Model_Dev/reports/emissions.csv
+Milestone_4-Model_Dev/reports/emissions.csv.bak
 Milestone_4-Model_Dev/reports/generated_code/
 
 # Milestone 5 local runtime state

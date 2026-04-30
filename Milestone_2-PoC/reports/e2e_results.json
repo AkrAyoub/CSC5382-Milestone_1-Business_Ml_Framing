@@ -1,0 +1,250 @@
+{
+  "generated_at": "2026-04-30T03:47:55.894262+00:00",
+  "tolerance": 1e-06,
+  "baseline": {
+    "status": "OK",
+    "instances": [
+      {
+        "instance": "cap71.txt",
+        "instance_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\data\\raw\\cap71.txt",
+        "objective": 932615.75,
+        "best_known": 932615.75,
+        "gap_percent": 0.0,
+        "runtime_s": 0.04868125915527344,
+        "open_facility_count": 11,
+        "open_facilities": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          10,
+          11,
+          12
+        ],
+        "assignment_count": 50,
+        "assignments_preview": [
+          7,
+          11,
+          0,
+          5,
+          7,
+          0,
+          1,
+          2,
+          7,
+          7,
+          3,
+          10,
+          5,
+          0,
+          6,
+          7,
+          3,
+          8,
+          3,
+          6
+        ]
+      },
+      {
+        "instance": "cap74.txt",
+        "instance_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\data\\raw\\cap74.txt",
+        "objective": 1034976.9750000001,
+        "best_known": 1034976.975,
+        "gap_percent": 1.1248107410982242e-14,
+        "runtime_s": 0.07539939880371094,
+        "open_facility_count": 4,
+        "open_facilities": [
+          2,
+          10,
+          11,
+          12
+        ],
+        "assignment_count": 50,
+        "assignments_preview": [
+          11,
+          11,
+          10,
+          2,
+          11,
+          10,
+          2,
+          2,
+          11,
+          11,
+          10,
+          10,
+          10,
+          10,
+          11,
+          11,
+          11,
+          10,
+          10,
+          11
+        ]
+      },
+      {
+        "instance": "cap131.txt",
+        "instance_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\data\\raw\\cap131.txt",
+        "objective": 793439.5625000001,
+        "best_known": 793439.562,
+        "gap_percent": 6.30167823616018e-08,
+        "runtime_s": 0.1682732105255127,
+        "open_facility_count": 15,
+        "open_facilities": [
+          5,
+          6,
+          10,
+          12,
+          14,
+          15,
+          17,
+          22,
+          26,
+          33,
+          36,
+          40,
+          44,
+          45,
+          48
+        ],
+        "assignment_count": 50,
+        "assignments_preview": [
+          15,
+          14,
+          5,
+          48,
+          15,
+          5,
+          6,
+          12,
+          15,
+          15,
+          10,
+          22,
+          12,
+          5,
+          14,
+          15,
+          10,
+          17,
+          10,
+          14
+        ]
+      }
+    ]
+  },
+  "llm_verification": {
+    "enabled": true,
+    "status": "OK",
+    "instance": "cap71.txt",
+    "instance_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\data\\raw\\cap71.txt",
+    "backend_name": "groq",
+    "model_name": "llama-3.1-8b-instant",
+    "baseline_objective": 932615.75,
+    "llm_objective": 932615.75,
+    "gap_vs_baseline_pct": 0.0,
+    "open_facility_count": 11,
+    "open_facilities": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12
+    ],
+    "assignment_count": 50,
+    "assignments_preview": [
+      7,
+      11,
+      0,
+      5,
+      7,
+      0,
+      1,
+      2,
+      7,
+      7,
+      3,
+      10,
+      5,
+      0,
+      6,
+      7,
+      3,
+      8,
+      3,
+      6
+    ],
+    "trace": [
+      {
+        "name": "1) Solve the instance with the deterministic CBC baseline",
+        "status": "OK",
+        "duration_s": 0.07957267761230469,
+        "error": null,
+        "artifact_keys": [
+          "baseline_assignments_preview",
+          "baseline_gap_pct",
+          "baseline_objective",
+          "baseline_open_facilities",
+          "baseline_runtime_s",
+          "best_known",
+          "instance_path"
+        ]
+      },
+      {
+        "name": "2) Generate solver code with off-the-shelf LLM (attempt 1)",
+        "status": "FAIL",
+        "duration_s": 2.4578537940979004,
+        "error": "GenValidationError: OBJECTIVE_MUST_USE_SETCOEFFICIENT: Do NOT use objective.Add(...). Build objective ONLY via SetCoefficient(y[i], fixed[i]) and SetCoefficient(x[j][i], cost[j][i]).\n\nRAW_PREVIEW:\n===BEGIN_CODE===\nimport pathlib\nfrom typing import Dict\nfrom ortools.linear_solver import pywraplp\n\ndef solve(instance_path: str) -> Dict[str, any]:\n    tokens = pathlib.Path(instance_path).read_text().split()\n    it = iter(tokens)\n    m = int(next(it)); n = int(next(it))\n    fixed = []\n    for i in range(m):\n        cap = float(next(it))   # parse but ignore\n        f = float(next(it))\n        fixed.append(f)\n    cost = []\n    for j in range(n):\n        demand = float(next(it))  # parse but ignore\n        row = [float(next(it)) for _ in range(m)]\n        cost.append(row)\n\n    solver = pywraplp.Solver.CreateSolver('CBC')\n    y = [solver.BoolVar(f'open_facility_{i}') for i in range(m)]\n    x = [[solver.BoolVar(f'assign_{j}_{i}') for i in range(m)] for j in range(n)]\n\n    for j in range(n):\n        solver.Add(solver.Sum([x[j][i] for i in range(m)]) == 1)\n    for j in range(n):\n        for i in range(m):\n            solver.Add(x[j][i] <= y[i])\n\n    objective = solver.Objective()\n    objective.SetMinimization()\n    objective.Add(solver.Sum([fixed[i]*y[i] for i in range(m)]))\n    for j in range(n):\n        for i in range(m):\n            objective.Add(cost[j][i]*x[j][i])\n\n    status = so",
+        "artifact_keys": [
+          "error_text"
+        ]
+      },
+      {
+        "name": "2) Generate solver code with off-the-shelf LLM (attempt 2)",
+        "status": "OK",
+        "duration_s": 1.323570966720581,
+        "error": null,
+        "artifact_keys": [
+          "generated_code",
+          "llm_backend",
+          "llm_model",
+          "raw_llm_output",
+          "system_prompt",
+          "user_prompt"
+        ]
+      },
+      {
+        "name": "3) Execute generated solver in sandbox (attempt 2)",
+        "status": "OK",
+        "duration_s": 0.05583667755126953,
+        "error": null,
+        "artifact_keys": [
+          "llm_assignments_preview",
+          "llm_objective",
+          "llm_open_facilities"
+        ]
+      },
+      {
+        "name": "4) Compare generated solver output vs deterministic baseline",
+        "status": "OK",
+        "duration_s": 5.0067901611328125e-06,
+        "error": null,
+        "artifact_keys": [
+          "llm_gap_vs_baseline_pct"
+        ]
+      }
+    ],
+    "error": null
+  }
+}

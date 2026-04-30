@@ -1,9 +1,9 @@
 {
   "selection_rule": "highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name",
-  "selected_candidate_name": "llm_robust_prompt_v1",
+  "selected_candidate_name": "openai_gpt41_mini_base",
   "selected_candidate_kind": "llm",
-  "selected_backend_name": "self_hosted_openai",
-  "selected_model_name": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "selected_backend_name": "openai",
+  "selected_model_name": "gpt-4.1-mini-2025-04-14",
   "selected_prompt_template": "robust_v1",
   "selected_validation_success_rate": 1.0,
   "selected_validation_exact_match_rate": 1.0,

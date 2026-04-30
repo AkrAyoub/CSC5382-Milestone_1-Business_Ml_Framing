@@ -1,0 +1,125 @@
+{
+  "pipeline_name": "m5_serving_pipeline",
+  "success": true,
+  "step_count": 4,
+  "steps": [
+    {
+      "name": "load_best_model",
+      "status": "SUCCESS",
+      "duration_s": 0.8369889259338379,
+      "details": {
+        "safe_default_mode": "baseline",
+        "default_llm_candidate_name": "openai_gpt41_mini_finetuned",
+        "deployment_target": "FastAPI + Streamlit + MLflow pyfunc runtime, deployable with Docker Compose or Hugging Face Spaces",
+        "selected_candidate_from_m4": {
+          "selection_rule": "highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name",
+          "selected_candidate_name": "openai_gpt41_mini_base",
+          "selected_candidate_kind": "llm",
+          "selected_backend_name": "openai",
+          "selected_model_name": "gpt-4.1-mini-2025-04-14",
+          "selected_prompt_template": "robust_v1",
+          "selected_validation_success_rate": 1.0,
+          "selected_validation_exact_match_rate": 1.0,
+          "selected_validation_mean_gap_vs_baseline_pct": 0.0
+        },
+        "candidate_count": 8,
+        "warnings": []
+      }
+    },
+    {
+      "name": "validate_api",
+      "status": "SUCCESS",
+      "duration_s": 1.2996056079864502,
+      "details": {
+        "health_status_code": 200,
+        "runtime_status_code": 200,
+        "predict_status_code": 200,
+        "latency_ms": 1299.304485321045,
+        "baseline_objective": 932615.75
+      }
+    },
+    {
+      "name": "run_api_tests",
+      "status": "SUCCESS",
+      "duration_s": 0.3328995704650879,
+      "details": {
+        "integration_tests_total": 12,
+        "integration_tests_passed": 12,
+        "integration_tests_failed": 0,
+        "integration_pass_rate": 1.0,
+        "checks": [
+          {
+            "name": "health endpoint returns 200",
+            "passed": true,
+            "detail": "200"
+          },
+          {
+            "name": "health status is ok",
+            "passed": true,
+            "detail": "{'status': 'ok'}"
+          },
+          {
+            "name": "catalog endpoint returns 200",
+            "passed": true,
+            "detail": "200"
+          },
+          {
+            "name": "catalog has instances",
+            "passed": true,
+            "detail": "count=15"
+          },
+          {
+            "name": "catalog includes cap71",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "baseline solve returns 200",
+            "passed": true,
+            "detail": "200"
+          },
+          {
+            "name": "baseline solve succeeds",
+            "passed": true,
+            "detail": "SUCCESS"
+          },
+          {
+            "name": "baseline objective positive",
+            "passed": true,
+            "detail": ""
+          },
+          {
+            "name": "auto solve returns 200",
+            "passed": true,
+            "detail": "200"
+          },
+          {
+            "name": "auto uses production default",
+            "passed": true,
+            "detail": "True"
+          },
+          {
+            "name": "batch solve returns 200",
+            "passed": true,
+            "detail": "200"
+          },
+          {
+            "name": "batch solve succeeds",
+            "passed": true,
+            "detail": "{'batch_id': '2f2ca7633374', 'requested_mode': 'baseline', 'response_count': 2, 'success_count': 2, 'partial_count': 0, 'failed_count': 0, 'responses': [{'request_id': 'f4f684ec932e', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap71', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 932615.75, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 932615.75, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.07668256759643555, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12], 'assignment_count': 50, 'assignments_preview': [7, 11, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 8, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}, {'request_id': '94346cfb82cd', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap72', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 977799.4, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 977799.4, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.08777356147766113, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 10, 12], 'assignment_count': 50, 'assignments_preview': [7, 6, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 10, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}]}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "register_serving",
+      "status": "SUCCESS",
+      "duration_s": 17.384972095489502,
+      "details": {
+        "mlflow_model_uri": "file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model",
+        "registered_model_name": "",
+        "registered_in_registry": false
+      }
+    }
+  ]
+}

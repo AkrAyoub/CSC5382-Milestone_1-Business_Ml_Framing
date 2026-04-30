@@ -21,6 +21,7 @@ dependencies = [
   "openai",
   "pydantic",
   "pyyaml",
+  "huggingface_hub",
 ]
 
 [tool.setuptools]

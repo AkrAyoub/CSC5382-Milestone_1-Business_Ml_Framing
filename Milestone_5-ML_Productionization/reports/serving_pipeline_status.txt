@@ -1,0 +1,25 @@
+Milestone 5 Serving Pipeline
+success: True
+
+- load_best_model: SUCCESS (0.84s)
+  - safe_default_mode: baseline
+  - default_llm_candidate_name: openai_gpt41_mini_finetuned
+  - deployment_target: FastAPI + Streamlit + MLflow pyfunc runtime, deployable with Docker Compose or Hugging Face Spaces
+  - selected_candidate_from_m4: {'selection_rule': 'highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name', 'selected_candidate_name': 'openai_gpt41_mini_base', 'selected_candidate_kind': 'llm', 'selected_backend_name': 'openai', 'selected_model_name': 'gpt-4.1-mini-2025-04-14', 'selected_prompt_template': 'robust_v1', 'selected_validation_success_rate': 1.0, 'selected_validation_exact_match_rate': 1.0, 'selected_validation_mean_gap_vs_baseline_pct': 0.0}
+  - candidate_count: 8
+  - warnings: []
+- validate_api: SUCCESS (1.30s)
+  - health_status_code: 200
+  - runtime_status_code: 200
+  - predict_status_code: 200
+  - latency_ms: 1299.304485321045
+  - baseline_objective: 932615.75
+- run_api_tests: SUCCESS (0.33s)
+  - integration_tests_total: 12
+  - integration_tests_passed: 12
+  - integration_tests_failed: 0
+  - integration_pass_rate: 1.0
+- register_serving: SUCCESS (17.38s)
+  - mlflow_model_uri: file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model
+  - registered_model_name: 
+  - registered_in_registry: False

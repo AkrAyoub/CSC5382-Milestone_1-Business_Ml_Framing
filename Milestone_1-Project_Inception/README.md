@@ -17,9 +17,9 @@
 
 ### Quick Links
 
-- **📄 [Full Report (PDF)](report_presentation/report.pdf)**
-- **📊 [Presentation (PDF)](report_presentation/presentation.pdf)**
-- **🎥 [Presentation Video (MP4)](report_presentation/presentation_video.mp4)**
+- **Report:** this README
+- **Notebook:** [notebook/baseline_uflp_ortools.ipynb](notebook/baseline_uflp_ortools.ipynb)
+- **References:** [references/references.md](references/references.md)
 
 ---
 
@@ -267,7 +267,7 @@ Implementation components (reproducible notebook baseline):
 The baseline is implemented in a Jupyter notebook (and mirrored in a Python script) with three key modules:
 
 1. Instance ingestion (OR-Library parsing): The notebook parses OR-Library uncapacitated warehouse location instances by extracting fixed opening costs $f_i$ (capacity ignored) and assignment costs $c_{ij}$ (demand ignored).
-2. Optimal value lookup: A small parser loads [uncapopt.txt](data/raw/uncapopt.txt) and maps each instance name (e.g., cap71) to its known optimal objective value, enabling exact gap computation.
+2. Optimal value lookup: A small parser loads [uncapopt.txt](../data/raw/uncapopt.txt) and maps each instance name (e.g., cap71) to its known optimal objective value, enabling exact gap computation.
 3. Canonical MILP formulation in OR-Tools (CBC backend).
 
 Decision variables:
@@ -326,7 +326,7 @@ These results confirm:
 Repository assets:
 
 - Notebook baseline (reproducible execution): [notebook/baseline_uflp_ortools.ipynb](notebook/baseline_uflp_ortools.ipynb)
-- Raw OR-Library instances + optimal values: [data/raw/](data/raw/) (cap*.txt, [uncapopt.txt](data/raw/uncapopt.txt))
+- Raw OR-Library instances + optimal values: [../data/raw/](../data/raw/) (cap*.txt, [uncapopt.txt](../data/raw/uncapopt.txt))
 
 Because the baseline is a deterministic optimization solver rather than a learned statistical model, the "trained binary + retraining notebook" requirement is interpreted in terms of reproducibility. Instead of model retraining, reproducibility is ensured via a Jupyter notebook that regenerates all results directly from raw OR-Library data, guaranteeing transparent and deterministic verification.
 

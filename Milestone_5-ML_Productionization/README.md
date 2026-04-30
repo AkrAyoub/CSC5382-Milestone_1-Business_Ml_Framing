@@ -29,6 +29,7 @@ This milestone productionizes the Milestone 1 system by turning the validated UF
 
 ## Quick Links
 
+- Live Hugging Face Space: https://huggingface.co/spaces/AkrAyoub/uflp-production-solver
 - Architecture drawing: [assets/architecture.png](assets/architecture.png)
 - API app: [src/m5_productionization/api/main.py](src/m5_productionization/api/main.py)
 - Service layer: [src/m5_productionization/service.py](src/m5_productionization/service.py)
@@ -41,6 +42,10 @@ This milestone productionizes the Milestone 1 system by turning the validated UF
 - CI/CD and deployment notes: [docs/cicd_and_deployment.md](docs/cicd_and_deployment.md)
 - Docker setup on Windows: [docs/docker_setup_windows.md](docs/docker_setup_windows.md)
 - Batch serving evidence: [reports/batch_smoke_summary.json](reports/batch_smoke_summary.json)
+- Serving pipeline evidence: [reports/serving_pipeline_status.txt](reports/serving_pipeline_status.txt)
+- Live fine-tuned serving smoke: [reports/live_finetuned_serving_smoke.json](reports/live_finetuned_serving_smoke.json)
+- M5 evidence report: [reports/m5_evidence_report.txt](reports/m5_evidence_report.txt)
+- Hugging Face Space bundle: [deployment/huggingface_space/](deployment/huggingface_space/)
 - Shared dataset: [../data/raw/](../data/raw/)
 - Milestone 4 backend base: [../Milestone_4-Model_Dev/README.md](../Milestone_4-Model_Dev/README.md)
 
@@ -81,6 +86,7 @@ System requirement for the containerized deployment path:
 Optional environment variables:
 
 ```powershell
+$env:OPENAI_API_KEY="your-openai-api-key"
 $env:SELF_HOSTED_OPENAI_BASE_URL="http://localhost:8001/v1"
 $env:SELF_HOSTED_OPENAI_API_KEY="local-dev-key"
 $env:SELF_HOSTED_MODEL_NAME="Qwen/Qwen2.5-Coder-7B-Instruct"
@@ -92,7 +98,7 @@ Notes:
 - The deterministic baseline path does not require any API key.
 - The production-safe default mode is `baseline`, even when the optional LLM path is available.
 - The milestone reuses the shared benchmark data in [../data/raw/](../data/raw/).
-- The optional LLM path now targets a self-hosted OpenAI-compatible runtime rather than a managed external inference API dependency.
+- The default optional LLM path now targets the real OpenAI fine-tuned model from Milestone 4: `openai_gpt41_mini_finetuned`.
 
 ### 1.3 Running the API Service
 
@@ -147,6 +153,26 @@ python scripts/package_mlflow_runtime.py
 
 This packages the service as a local MLflow pyfunc runtime under `.m5_runtime/mlflow_runtime_model`. Registry registration is optional and can be enabled later with `M5_REGISTER_RUNTIME_MODEL=1` when the environment supports it cleanly.
 
+### 1.6.1 Running the Serving Pipeline Evidence
+
+Run the production serving validation pipeline:
+
+```powershell
+python scripts/run_serving_pipeline.py
+```
+
+This verifies the service as a serving runtime:
+
+1. loads the selected M4 model/candidate metadata
+2. validates `/healthz`, `/api/v1/runtime`, and `/api/v1/solve`
+3. runs 12 API integration checks
+4. packages the service as an MLflow pyfunc runtime
+
+Outputs:
+
+- [reports/serving_pipeline_status.json](reports/serving_pipeline_status.json)
+- [reports/serving_pipeline_status.txt](reports/serving_pipeline_status.txt)
+
 ### 1.7 Containerized Execution
 
 Run the API and frontend with Docker Compose:
@@ -171,6 +197,33 @@ Artifacts:
 - [deployment/Dockerfile.client](deployment/Dockerfile.client)
 - [deployment/docker-compose.yml](deployment/docker-compose.yml)
 
+### 1.7.1 Hugging Face Space Deployment
+
+A Streamlit Hugging Face Space bundle is included in [deployment/huggingface_space/](deployment/huggingface_space/).
+
+Build the bundle locally:
+
+```powershell
+python scripts/deploy_huggingface_space.py
+```
+
+This writes a deployable Space directory to:
+
+```text
+D:\csc5382_m5_hf_space_build
+```
+
+To publish it, set credentials and run:
+
+```powershell
+$env:HF_TOKEN="hf_..."
+$env:HF_SPACE_ID="your-username/uflp-production-solver"
+$env:M5_DEPLOY_HF="1"
+python scripts/deploy_huggingface_space.py
+```
+
+After upload, configure `OPENAI_API_KEY` as a Hugging Face Space secret to enable live fine-tuned LLM mode. Baseline mode works without the OpenAI secret.
+
 ### 1.8 Troubleshooting
 
 - If `m4_model_dev` imports fail, ensure M5 is installed with `pip install -e .`.
@@ -180,7 +233,7 @@ Artifacts:
 
 ## 2. Milestone 5 - Model Productionization
 
-This milestone turns the project into a served application while preserving the project identity fixed in Milestone 1. The deterministic OR-Tools/CBC solver is the production-safe default runtime, and the LLM-assisted symbolic generation path is available as an optional mode for controlled comparison and demos.
+This milestone turns the project into a served application while preserving the project identity fixed in Milestone 1. The deterministic OR-Tools/CBC solver is the production-safe default runtime, and the OpenAI fine-tuned symbolic generation path from Milestone 4 is available as an optional mode for controlled comparison and demos.
 
 ### 2.1 ML System Architecture
 
@@ -189,7 +242,7 @@ The architecture is documented in [assets/architecture.png](assets/architecture.
 - a machine-facing FastAPI service
 - a human-facing Streamlit client
 - a runtime selector that defaults to the deterministic CBC baseline
-- an optional self-hosted OpenAI-compatible runtime built on the M4 symbolic-generation stack
+- an optional hosted OpenAI fine-tuned runtime built on the M4 symbolic-generation stack
 - MLflow runtime packaging for serving evidence
 - Docker Compose deployment and GitHub Actions CI/CD
 
@@ -200,7 +253,7 @@ The architecture highlights the full production path:
 3. The service resolves catalog or inline input into a UFLP instance.
 4. The runtime selector chooses `auto`, `baseline`, `llm`, or `compare`.
 5. OR-Tools/CBC computes the trusted baseline.
-6. Optional self-hosted LLM candidates generate solver code, which is sandboxed and verified.
+6. Optional OpenAI base/fine-tuned LLM candidates generate solver code, which is sandboxed and verified.
 7. Results are returned through structured API schemas and can also be packaged as an MLflow pyfunc runtime.
 
 This architecture keeps the milestone aligned with Milestone 1: the solver remains the trusted optimization engine and verification layer, while the LLM remains a symbolic model/code generator.
@@ -308,7 +361,10 @@ The workflow validates that the production code can be installed, tested, smoke-
 
 #### 2.3.3 Hosting the Application
 
-The selected hosting target is a Docker Compose deployment on a Linux VM / DigitalOcean-style host, documented in [deployment/README.md](deployment/README.md) and [docs/cicd_and_deployment.md](docs/cicd_and_deployment.md).
+The selected hosting targets are:
+
+- Docker Compose deployment on a Linux VM / DigitalOcean-style host, documented in [deployment/README.md](deployment/README.md) and [docs/cicd_and_deployment.md](docs/cicd_and_deployment.md)
+- Hugging Face Spaces Streamlit deployment using [deployment/huggingface_space/](deployment/huggingface_space/) and [scripts/deploy_huggingface_space.py](scripts/deploy_huggingface_space.py)
 
 The repository contains the deployment stack and the GitHub Actions deploy job for a Docker Compose host. Configure the documented SSH and self-hosted model secrets in GitHub Actions, then run the workflow from the `master` branch to deploy the API and client.
 
@@ -317,6 +373,12 @@ The same Compose stack can be tested locally through Docker Desktop. In local mo
 - FastAPI is exposed on `http://localhost:8000`.
 - Streamlit is exposed on `http://localhost:8501`.
 - API docs are exposed on `http://localhost:8000/docs`.
+
+Verified hosting/deployment evidence:
+
+- Hugging Face bundle build succeeds locally.
+- GitHub Actions includes a `deploy-huggingface-space` job gated by `HF_TOKEN` and `HF_SPACE_ID` secrets.
+- GitHub Actions includes an SSH-based Compose deployment job gated by VM secrets.
 
 ### 2.4 Model Serving
 
@@ -328,13 +390,22 @@ The serving runtime combines:
 - direct runtime execution through [src/m5_productionization/runtime.py](src/m5_productionization/runtime.py)
 - MLflow pyfunc packaging through [src/m5_productionization/mlflow_runtime.py](src/m5_productionization/mlflow_runtime.py)
 
-The runtime intentionally uses the deterministic baseline as the production-safe default. The optional model path now targets a self-hosted OpenAI-compatible server and can point either to the base model or a fine-tuned adapter selected from Milestone 4 outputs.
+The runtime intentionally uses the deterministic baseline as the production-safe default. The optional model path now targets the hosted OpenAI fine-tuned model selected from Milestone 4 outputs.
+
+Live fine-tuned serving evidence:
+
+- candidate: `openai_gpt41_mini_finetuned`
+- model: `ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH`
+- candidate status: `OK`
+- gap versus baseline on the smoke instance: `0.0%`
+- saved output: [reports/live_finetuned_serving_smoke.json](reports/live_finetuned_serving_smoke.json)
 
 Runtime evidence:
 
 - API smoke test: [scripts/smoke_test.py](scripts/smoke_test.py)
 - Batch serving smoke job: [scripts/run_batch_job.py](scripts/run_batch_job.py)
 - MLflow runtime packaging: [scripts/package_mlflow_runtime.py](scripts/package_mlflow_runtime.py)
+- Serving pipeline evidence: [scripts/run_serving_pipeline.py](scripts/run_serving_pipeline.py)
 - Runtime tests: [tests/](tests/)
 
 Alignment with previous milestones:

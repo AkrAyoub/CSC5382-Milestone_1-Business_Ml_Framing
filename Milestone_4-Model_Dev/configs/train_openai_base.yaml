@@ -1,0 +1,22 @@
+run_name: openai_gpt41_mini_base_live
+random_seed: 42
+runtime:
+  allow_template_fallback: false
+candidate:
+  name: openai_gpt41_mini_base
+  enabled: true
+  model_name: gpt-4.1-mini-2025-04-14
+  prompt_template: robust_v1
+  max_tokens: 3500
+evaluation:
+  splits:
+    - train
+    - val
+    - test
+  exact_match_tolerance_pct: 1.0e-6
+tracking:
+  enable_mlflow: true
+  enable_codecarbon: true
+  register_model: true
+  registered_model_name: m4-openai-gpt41-mini-base
+  experiment_name: milestone4-openai-symbolic-evaluation

@@ -49,7 +49,7 @@ class ProductionizationService:
             project_identity="AI-assisted symbolic optimization for UFLP with a deterministic solver as the trusted verifier",
             primary_serving_mode="On demand to a machine via FastAPI",
             frontend_client="Streamlit frontend calling the API",
-            runtime="FastAPI/Uvicorn service with deterministic baseline plus optional self-hosted OpenAI-compatible symbolic runtime",
+            runtime="FastAPI/Uvicorn service with deterministic baseline plus hosted OpenAI fine-tuned symbolic runtime",
             deployment_target=DEPLOYMENT_TARGET,
         )
 

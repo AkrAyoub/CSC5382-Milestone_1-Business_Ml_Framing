@@ -1,0 +1,59 @@
+{
+  "created_at": "2026-04-30T05:23:31.146986+00:00",
+  "base_model": "gpt-4.1-mini-2025-04-14",
+  "training_file_id": "file-VbzhWU67MDyMfGRrWksQR3",
+  "validation_file_id": "file-KTZGVgs3D1bpotM3GHfyX7",
+  "job": {
+    "id": "ftjob-W3ZY03L6gkPK4hsXLhvdvTHF",
+    "created_at": 1777526610,
+    "error": {
+      "code": null,
+      "message": null,
+      "param": null
+    },
+    "fine_tuned_model": "ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH",
+    "finished_at": 1777527439,
+    "hyperparameters": {
+      "batch_size": 1,
+      "learning_rate_multiplier": 2.0,
+      "n_epochs": 9
+    },
+    "model": "gpt-4.1-mini-2025-04-14",
+    "object": "fine_tuning.job",
+    "organization_id": "org-D9sRu9gtsNLTXtvZwIVGFERo",
+    "result_files": [
+      "file-UMwbe77gpTXXn1m1sEKd41"
+    ],
+    "seed": 790202284,
+    "status": "succeeded",
+    "trained_tokens": 72666,
+    "training_file": "file-VbzhWU67MDyMfGRrWksQR3",
+    "validation_file": "file-KTZGVgs3D1bpotM3GHfyX7",
+    "estimated_finish": null,
+    "integrations": [],
+    "metadata": null,
+    "method": {
+      "type": "supervised",
+      "dpo": null,
+      "reinforcement": null,
+      "supervised": {
+        "hyperparameters": {
+          "batch_size": 1,
+          "learning_rate_multiplier": 2.0,
+          "n_epochs": 9
+        }
+      }
+    },
+    "user_provided_suffix": "uflp-symbolic-solver",
+    "usage_metrics": null,
+    "shared_with_openai": false,
+    "eval_id": null,
+    "internal_worker_backend": null,
+    "internal_peashooter_execution": null,
+    "train_experiment_id": null,
+    "eval_experiment_id": null
+  },
+  "fine_tuned_model": "ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH",
+  "status": "succeeded",
+  "last_checked_at": "2026-04-30T05:50:45.660035+00:00"
+}

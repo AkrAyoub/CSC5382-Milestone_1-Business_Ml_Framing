@@ -1,6 +1,11 @@
 # Deployment Notes
 
-This milestone targets a Docker Compose deployment on a Linux VM or container host. The stack consists of:
+This milestone targets two deployment paths:
+
+- Docker Compose deployment on a Linux VM or container host
+- Hugging Face Spaces Streamlit deployment from `huggingface_space/`
+
+The Docker stack consists of:
 
 - `llm-server`: self-hosted OpenAI-compatible vLLM runtime serving the selected base model
 - `api`: FastAPI/Uvicorn production service
@@ -38,3 +43,21 @@ Recommended production deployment flow:
 5. Run `docker compose --profile selfhosted up -d --build`.
 
 The GitHub Actions workflow in `.github/workflows/milestone5-ci-cd.yml` supports this deployment pattern through an optional SSH-based deploy job when the repository secrets are configured.
+
+Hugging Face Space deployment:
+
+```powershell
+cd Milestone_5-ML_Productionization
+python scripts/deploy_huggingface_space.py
+```
+
+To upload:
+
+```powershell
+$env:HF_TOKEN="hf_..."
+$env:HF_SPACE_ID="your-username/uflp-production-solver"
+$env:M5_DEPLOY_HF="1"
+python scripts/deploy_huggingface_space.py
+```
+
+Set `OPENAI_API_KEY` as a Space secret to enable live fine-tuned LLM mode.

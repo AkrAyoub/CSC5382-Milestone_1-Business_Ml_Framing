@@ -1,0 +1,70 @@
+Milestone 4 Evidence Report
+
+Generated at: 2026-04-30T06:27:53.707916+00:00
+
+Verification:
+- Tests passed: True
+- ZenML success: True
+- MLflow logged: True
+- Registered model name: m4-openai-gpt41-mini-base
+
+Model versioning:
+- Candidate spec path: D:\aui\Ayoub\Spring_2026\AI for Digital Transformation\Project\Milestone 5 - Productionization + Refactoring\CSC5382-Project\Milestone_4-Model_Dev\artifacts\openai_gpt41_mini_base_spec.json
+- Fine-tuned candidate enabled: True
+
+OpenAI fine-tuning track:
+- Fine-tuning data manifest available: True
+- Train records: 11
+- Validation records: 4
+- Job artifact available: True
+- Job status: succeeded
+- Fine-tuned model: ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH
+
+Model comparison:
+- Selected candidate: openai_gpt41_mini_base
+- Selected validation success rate: 1.0
+- Uses template fallback in comparison outputs: False
+- Template fallback rows: 0
+- openai_gpt41_mini_base train: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=7
+- openai_gpt41_mini_base val: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=4
+- openai_gpt41_mini_base test: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=4
+- openai_gpt41_mini_finetuned train: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=7
+- openai_gpt41_mini_finetuned val: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=4
+- openai_gpt41_mini_finetuned test: generation=1.0000, execution=1.0000, exact_match=1.0000, attempted=4
+
+Live single-candidate run:
+- Candidate: openai_gpt41_mini_base
+- Backend: openai
+- Successful instances: 15
+- Failed instances: 0
+- Skipped instances: 0
+
+Energy:
+- Available: True
+- Latest emissions kg: 0.0022781644095963105
+- Latest energy kWh: 0.0036160536267389465
+
+Known limitations:
+- The OpenAI fine-tuning dataset is intentionally small because this milestone is a proof of MLOps training and evaluation integration, not final production model scaling.
+- Template fallback rows, if any, are explicitly marked with generation_backend_name=template_fallback in comparison outputs.
+
+Test command output:
+test_ordering_uses_validation_metrics_and_ignores_baseline_for_selection (test_comparison_selection.ComparisonSelectionTests.test_ordering_uses_validation_metrics_and_ignores_baseline_for_selection) ... ok
+test_train_and_compare_candidate_overrides_match (test_config_alignment.ConfigAlignmentTests.test_train_and_compare_candidate_overrides_match) ... ok
+test_train_best_candidate_exists_in_comparison_candidates (test_config_alignment.ConfigAlignmentTests.test_train_best_candidate_exists_in_comparison_candidates) ... ok
+test_default_candidates_include_expected_symbolic_variants (test_model_registry.ModelRegistryTests.test_default_candidates_include_expected_symbolic_variants) ... ok
+test_fine_tuned_candidate_can_be_enabled_from_environment (test_model_registry.ModelRegistryTests.test_fine_tuned_candidate_can_be_enabled_from_environment) ... ok
+test_override_updates_candidate_metadata (test_model_registry.ModelRegistryTests.test_override_updates_candidate_metadata) ... ok
+test_openai_base_candidate_is_available (test_openai_track.OpenAITrackTests.test_openai_base_candidate_is_available) ... ok
+test_openai_finetuned_candidate_can_be_enabled_from_environment (test_openai_track.OpenAITrackTests.test_openai_finetuned_candidate_can_be_enabled_from_environment) ... ok
+test_sft_record_converts_to_openai_chat_format (test_openai_track.OpenAITrackTests.test_sft_record_converts_to_openai_chat_format) ... ok
+test_live_candidate_fails_without_endpoint_when_template_fallback_is_disabled (test_symbolic_generator.SymbolicGeneratorTests.test_live_candidate_fails_without_endpoint_when_template_fallback_is_disabled) ... ok
+test_live_draft_repair_normalizes_known_robust_failure (test_symbolic_generator.SymbolicGeneratorTests.test_live_draft_repair_normalizes_known_robust_failure) ... ok
+test_live_draft_repair_normalizes_known_token_failure (test_symbolic_generator.SymbolicGeneratorTests.test_live_draft_repair_normalizes_known_token_failure) ... ok
+test_robust_candidate_falls_back_to_validated_template_without_endpoint (test_symbolic_generator.SymbolicGeneratorTests.test_robust_candidate_falls_back_to_validated_template_without_endpoint) ... ok
+test_token_candidate_template_handles_literal_capacity_variant (test_symbolic_generator.SymbolicGeneratorTests.test_token_candidate_template_handles_literal_capacity_variant) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 1.749s
+
+OK
