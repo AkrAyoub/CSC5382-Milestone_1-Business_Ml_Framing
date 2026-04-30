@@ -85,7 +85,10 @@ jobs:
   deploy-huggingface-space:
     runs-on: ubuntu-latest
     needs: [build-images, build-huggingface-space]
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.HF_TOKEN != '' && secrets.HF_SPACE_ID != ''
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
     defaults:
       run:
         working-directory: Milestone_5-ML_Productionization
@@ -105,22 +108,30 @@ jobs:
           pip install -e .
 
       - name: Deploy Hugging Face Space
+        if: env.HF_TOKEN != '' && env.HF_SPACE_ID != ''
         env:
           PYTHONPATH: ${{ github.workspace }}/Milestone_4-Model_Dev/src
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_SPACE_ID: ${{ secrets.HF_SPACE_ID }}
           M5_DEPLOY_HF: "1"
         run: python scripts/deploy_huggingface_space.py
+
+      - name: Skip Hugging Face deployment
+        if: env.HF_TOKEN == '' || env.HF_SPACE_ID == ''
+        run: echo "Skipping Hugging Face deployment because HF_TOKEN or HF_SPACE_ID is not configured."
 
   deploy-compose-vm:
     runs-on: ubuntu-latest
     needs: build-images
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && secrets.M5_DEPLOY_HOST != '' && secrets.M5_DEPLOY_USER != '' && secrets.M5_DEPLOY_SSH_KEY != ''
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    env:
+      M5_DEPLOY_HOST: ${{ secrets.M5_DEPLOY_HOST }}
+      M5_DEPLOY_USER: ${{ secrets.M5_DEPLOY_USER }}
+      M5_DEPLOY_SSH_KEY: ${{ secrets.M5_DEPLOY_SSH_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Copy repository to deployment host
+        if: env.M5_DEPLOY_HOST != '' && env.M5_DEPLOY_USER != '' && env.M5_DEPLOY_SSH_KEY != ''
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.M5_DEPLOY_HOST }}
@@ -130,6 +141,7 @@ jobs:
           target: "~/csc5382-m5"
 
       - name: Deploy stack with Docker Compose
+        if: env.M5_DEPLOY_HOST != '' && env.M5_DEPLOY_USER != '' && env.M5_DEPLOY_SSH_KEY != ''
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.M5_DEPLOY_HOST }}
@@ -142,3 +154,7 @@ jobs:
             export SELF_HOSTED_MODEL_NAME='${{ secrets.SELF_HOSTED_MODEL_NAME }}'
             export M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME='${{ secrets.M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME }}'
             docker compose up -d --build
+
+      - name: Skip VM deployment
+        if: env.M5_DEPLOY_HOST == '' || env.M5_DEPLOY_USER == '' || env.M5_DEPLOY_SSH_KEY == ''
+        run: echo "Skipping VM deployment because M5 deploy SSH secrets are not configured."
