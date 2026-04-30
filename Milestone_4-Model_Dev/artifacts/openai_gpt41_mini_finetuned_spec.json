@@ -1,0 +1,11 @@
+{
+  "name": "openai_gpt41_mini_finetuned",
+  "kind": "llm",
+  "backend": "openai",
+  "model_name": "ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH",
+  "prompt_template": "robust_v1",
+  "temperature": 0.0,
+  "max_tokens": 3500,
+  "enabled": true,
+  "notes": "Hosted OpenAI fine-tuned model slot resolved from OPENAI_FINE_TUNED_MODEL or the fine-tune job artifact."
+}

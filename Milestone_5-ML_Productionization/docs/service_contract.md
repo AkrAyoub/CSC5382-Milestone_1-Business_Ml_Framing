@@ -15,6 +15,12 @@ Solve modes:
 - `llm`: baseline plus one optional LLM candidate execution
 - `compare`: baseline plus one optional LLM candidate execution, intended for side-by-side evaluation
 
+Default optional LLM candidate:
+
+- `openai_gpt41_mini_finetuned`
+- model: `ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH`
+- requires `OPENAI_API_KEY`
+
 Input sources:
 
 - `catalog`: solve one instance from the shared benchmark catalog by `instance_id`

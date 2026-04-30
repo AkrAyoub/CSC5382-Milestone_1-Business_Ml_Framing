@@ -1,0 +1,516 @@
+{
+  "generated_at": "2026-04-30T07:07:39.454217+00:00",
+  "requirements_coverage": {
+    "architecture_drawing": true,
+    "serving_modes": [
+      "on-demand-machine",
+      "on-demand-human",
+      "batch"
+    ],
+    "model_service_api": true,
+    "front_end_client": true,
+    "containerization": true,
+    "cicd": true,
+    "hosting_assets": true,
+    "model_serving_runtime": true
+  },
+  "commands": {
+    "pytest": {
+      "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe -m pytest tests -q",
+      "returncode": 0,
+      "success": true,
+      "stdout": "........                                                                 [100%]\n============================== warnings summary ===============================\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyPacked has no __module__ attribute\n\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type SwigPyObject has no __module__ attribute\n\n<frozen importlib._bootstrap>:488\n  <frozen importlib._bootstrap>:488: DeprecationWarning: builtin type swigvarlink has no __module__ attribute\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n8 passed, 3 warnings in 4.97s",
+      "stderr": ""
+    },
+    "smoke_test": {
+      "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe scripts/smoke_test.py",
+      "returncode": 0,
+      "success": true,
+      "stdout": "health: 200 {'status': 'ok'}\ncatalog_count: 15\nsolve_status: 200 SUCCESS",
+      "stderr": ""
+    },
+    "serving_pipeline": {
+      "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe scripts/run_serving_pipeline.py",
+      "returncode": 0,
+      "success": true,
+      "stdout": "{\n  \"pipeline_name\": \"m5_serving_pipeline\",\n  \"success\": true,\n  \"step_count\": 4,\n  \"steps\": [\n    {\n      \"name\": \"load_best_model\",\n      \"status\": \"SUCCESS\",\n      \"duration_s\": 0.8369889259338379,\n      \"details\": {\n        \"safe_default_mode\": \"baseline\",\n        \"default_llm_candidate_name\": \"openai_gpt41_mini_finetuned\",\n        \"deployment_target\": \"FastAPI + Streamlit + MLflow pyfunc runtime, deployable with Docker Compose or Hugging Face Spaces\",\n        \"selected_candidate_from_m4\": {\n          \"selection_rule\": \"highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name\",\n          \"selected_candidate_name\": \"openai_gpt41_mini_base\",\n          \"selected_candidate_kind\": \"llm\",\n          \"selected_backend_name\": \"openai\",\n          \"selected_model_name\": \"gpt-4.1-mini-2025-04-14\",\n          \"selected_prompt_template\": \"robust_v1\",\n          \"selected_validation_success_rate\": 1.0,\n          \"selected_validation_exact_match_rate\": 1.0,\n          \"selected_validation_mean_gap_vs_baseline_pct\": 0.0\n        },\n        \"candidate_count\": 8,\n        \"warnings\": []\n      }\n    },\n    {\n      \"name\": \"validate_api\",\n      \"status\": \"SUCCESS\",\n      \"duration_s\": 1.2996056079864502,\n      \"details\": {\n        \"health_status_code\": 200,\n        \"runtime_status_code\": 200,\n        \"predict_status_code\": 200,\n        \"latency_ms\": 1299.304485321045,\n        \"baseline_objective\": 932615.75\n      }\n    },\n    {\n      \"name\": \"run_api_tests\",\n      \"status\": \"SUCCESS\",\n      \"duration_s\": 0.3328995704650879,\n      \"details\": {\n        \"integration_tests_total\": 12,\n        \"integration_tests_passed\": 12,\n        \"integration_tests_failed\": 0,\n        \"integration_pass_rate\": 1.0,\n        \"checks\": [\n          {\n            \"name\": \"health endpoint returns 200\",\n            \"passed\": true,\n            \"detail\": \"200\"\n          },\n          {\n            \"name\": \"health status is ok\",\n            \"passed\": true,\n            \"detail\": \"{'status': 'ok'}\"\n          },\n          {\n            \"name\": \"catalog endpoint returns 200\",\n            \"passed\": true,\n            \"detail\": \"200\"\n          },\n          {\n            \"name\": \"catalog has instances\",\n            \"passed\": true,\n            \"detail\": \"count=15\"\n          },\n          {\n            \"name\": \"catalog includes cap71\",\n            \"passed\": true,\n            \"detail\": \"\"\n          },\n          {\n            \"name\": \"baseline solve returns 200\",\n            \"passed\": true,\n            \"detail\": \"200\"\n          },\n          {\n            \"name\": \"baseline solve succeeds\",\n            \"passed\": true,\n            \"detail\": \"SUCCESS\"\n          },\n          {\n            \"name\": \"baseline objective positive\",\n            \"passed\": true,\n            \"detail\": \"\"\n          },\n          {\n            \"name\": \"auto solve returns 200\",\n            \"passed\": true,\n            \"detail\": \"200\"\n          },\n          {\n            \"name\": \"auto uses production default\",\n            \"passed\": true,\n            \"detail\": \"True\"\n          },\n          {\n            \"name\": \"batch solve returns 200\",\n            \"passed\": true,\n            \"detail\": \"200\"\n          },\n          {\n            \"name\": \"batch solve succeeds\",\n            \"passed\": true,\n            \"detail\": \"{'batch_id': '2f2ca7633374', 'requested_mode': 'baseline', 'response_count': 2, 'success_count': 2, 'partial_count': 0, 'failed_count': 0, 'responses': [{'request_id': 'f4f684ec932e', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap71', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 932615.75, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 932615.75, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.07668256759643555, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12], 'assignment_count': 50, 'assignments_preview': [7, 11, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 8, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}, {'request_id': '94346cfb82cd', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap72', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 977799.4, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 977799.4, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.08777356147766113, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 10, 12], 'assignment_count': 50, 'assignments_preview': [7, 6, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 10, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}]}\"\n          }\n        ]\n      }\n    },\n    {\n      \"name\": \"register_serving\",\n      \"status\": \"SUCCESS\",\n      \"duration_s\": 17.384972095489502,\n      \"details\": {\n        \"mlflow_model_uri\": \"file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model\",\n        \"registered_model_name\": \"\",\n        \"registered_in_registry\": false\n      }\n    }\n  ]\n}",
+      "stderr": "2026/04/30 08:07:01 WARNING mlflow.pyfunc: Passing a Python object as `python_model` causes it to be serialized using CloudPickle, it requires exercising caution as Python object serialization mechanisms may execute arbitrary code during deserialization.Consider using a file path (str or Path) instead. See https://mlflow.org/docs/latest/ml/model/models-from-code/ for details.\n2026/04/30 08:07:01 INFO mlflow.pyfunc: Inferring model signature from input example"
+    },
+    "huggingface_bundle": {
+      "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe scripts/deploy_huggingface_space.py",
+      "returncode": 0,
+      "success": true,
+      "stdout": "Built Hugging Face Space bundle at: D:\\csc5382_m5_hf_space_build\nSet M5_DEPLOY_HF=1, HF_TOKEN, and HF_SPACE_ID to upload it.",
+      "stderr": ""
+    },
+    "docker_compose_config": {
+      "command": "docker compose -f deployment/docker-compose.yml config",
+      "returncode": 0,
+      "success": true,
+      "stdout": "name: deployment\nservices:\n  api:\n    build:\n      context: D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\n      dockerfile: Milestone_5-ML_Productionization/deployment/Dockerfile.api\n    environment:\n      M5_API_HOST: 0.0.0.0\n      M5_API_PORT: \"8000\"\n      M5_SELF_HOSTED_FINE_TUNED_MODEL_NAME: \"\"\n      SELF_HOSTED_MODEL_NAME: Qwen/Qwen2.5-Coder-7B-Instruct\n      SELF_HOSTED_OPENAI_API_KEY: local-dev-key\n      SELF_HOSTED_OPENAI_BASE_URL: http://llm-server:8000/v1\n    networks:\n      default: null\n    ports:\n      - mode: ingress\n        target: 8000\n        published: \"8000\"\n        protocol: tcp\n  client:\n    build:\n      context: D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\n      dockerfile: Milestone_5-ML_Productionization/deployment/Dockerfile.client\n    depends_on:\n      api:\n        condition: service_started\n        required: true\n    environment:\n      M5_API_BASE_URL: http://api:8000\n    networks:\n      default: null\n    ports:\n      - mode: ingress\n        target: 8501\n        published: \"8501\"\n        protocol: tcp\nnetworks:\n  default:\n    name: deployment_default",
+      "stderr": ""
+    },
+    "mlflow_packaging": {
+      "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe scripts/package_mlflow_runtime.py",
+      "returncode": 0,
+      "success": true,
+      "stdout": "Logged runtime model without registry registration\nModel URI: file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model",
+      "stderr": "2026/04/30 08:07:23 WARNING mlflow.pyfunc: Passing a Python object as `python_model` causes it to be serialized using CloudPickle, it requires exercising caution as Python object serialization mechanisms may execute arbitrary code during deserialization.Consider using a file path (str or Path) instead. See https://mlflow.org/docs/latest/ml/model/models-from-code/ for details.\n2026/04/30 08:07:23 INFO mlflow.pyfunc: Inferring model signature from input example"
+    }
+  },
+  "serving_pipeline_status": {
+    "pipeline_name": "m5_serving_pipeline",
+    "success": true,
+    "step_count": 4,
+    "steps": [
+      {
+        "name": "load_best_model",
+        "status": "SUCCESS",
+        "duration_s": 0.8369889259338379,
+        "details": {
+          "safe_default_mode": "baseline",
+          "default_llm_candidate_name": "openai_gpt41_mini_finetuned",
+          "deployment_target": "FastAPI + Streamlit + MLflow pyfunc runtime, deployable with Docker Compose or Hugging Face Spaces",
+          "selected_candidate_from_m4": {
+            "selection_rule": "highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name",
+            "selected_candidate_name": "openai_gpt41_mini_base",
+            "selected_candidate_kind": "llm",
+            "selected_backend_name": "openai",
+            "selected_model_name": "gpt-4.1-mini-2025-04-14",
+            "selected_prompt_template": "robust_v1",
+            "selected_validation_success_rate": 1.0,
+            "selected_validation_exact_match_rate": 1.0,
+            "selected_validation_mean_gap_vs_baseline_pct": 0.0
+          },
+          "candidate_count": 8,
+          "warnings": []
+        }
+      },
+      {
+        "name": "validate_api",
+        "status": "SUCCESS",
+        "duration_s": 1.2996056079864502,
+        "details": {
+          "health_status_code": 200,
+          "runtime_status_code": 200,
+          "predict_status_code": 200,
+          "latency_ms": 1299.304485321045,
+          "baseline_objective": 932615.75
+        }
+      },
+      {
+        "name": "run_api_tests",
+        "status": "SUCCESS",
+        "duration_s": 0.3328995704650879,
+        "details": {
+          "integration_tests_total": 12,
+          "integration_tests_passed": 12,
+          "integration_tests_failed": 0,
+          "integration_pass_rate": 1.0,
+          "checks": [
+            {
+              "name": "health endpoint returns 200",
+              "passed": true,
+              "detail": "200"
+            },
+            {
+              "name": "health status is ok",
+              "passed": true,
+              "detail": "{'status': 'ok'}"
+            },
+            {
+              "name": "catalog endpoint returns 200",
+              "passed": true,
+              "detail": "200"
+            },
+            {
+              "name": "catalog has instances",
+              "passed": true,
+              "detail": "count=15"
+            },
+            {
+              "name": "catalog includes cap71",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "baseline solve returns 200",
+              "passed": true,
+              "detail": "200"
+            },
+            {
+              "name": "baseline solve succeeds",
+              "passed": true,
+              "detail": "SUCCESS"
+            },
+            {
+              "name": "baseline objective positive",
+              "passed": true,
+              "detail": ""
+            },
+            {
+              "name": "auto solve returns 200",
+              "passed": true,
+              "detail": "200"
+            },
+            {
+              "name": "auto uses production default",
+              "passed": true,
+              "detail": "True"
+            },
+            {
+              "name": "batch solve returns 200",
+              "passed": true,
+              "detail": "200"
+            },
+            {
+              "name": "batch solve succeeds",
+              "passed": true,
+              "detail": "{'batch_id': '2f2ca7633374', 'requested_mode': 'baseline', 'response_count': 2, 'success_count': 2, 'partial_count': 0, 'failed_count': 0, 'responses': [{'request_id': 'f4f684ec932e', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap71', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 932615.75, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 932615.75, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.07668256759643555, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12], 'assignment_count': 50, 'assignments_preview': [7, 11, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 8, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}, {'request_id': '94346cfb82cd', 'request_label': None, 'served_mode': 'baseline', 'requested_mode': 'baseline', 'source': 'catalog', 'instance_id': 'cap72', 'overall_status': 'SUCCESS', 'production_default_used': False, 'best_known_objective': 977799.4, 'warnings': [], 'baseline': {'name': 'deterministic_baseline', 'kind': 'deterministic_baseline', 'status': 'OK', 'backend_name': None, 'model_name': None, 'prompt_template': None, 'objective': 977799.4, 'gap_vs_best_known_pct': 0.0, 'gap_vs_baseline_pct': None, 'runtime_s': 0.08777356147766113, 'open_facilities': [0, 1, 2, 3, 5, 6, 7, 10, 12], 'assignment_count': 50, 'assignments_preview': [7, 6, 0, 5, 7, 0, 1, 2, 7, 7, 3, 10, 5, 0, 6, 7, 3, 10, 3, 6], 'assignments': None, 'generated_code': None, 'error': None, 'notes': []}, 'candidate': None}]}"
+            }
+          ]
+        }
+      },
+      {
+        "name": "register_serving",
+        "status": "SUCCESS",
+        "duration_s": 17.384972095489502,
+        "details": {
+          "mlflow_model_uri": "file:///D:/aui/Ayoub/Spring_2026/AI%20for%20Digital%20Transformation/Project/Milestone%205%20-%20Productionization%20%2B%20Refactoring/CSC5382-Project/Milestone_5-ML_Productionization/.m5_runtime/mlflow_runtime_model",
+          "registered_model_name": "",
+          "registered_in_registry": false
+        }
+      }
+    ]
+  },
+  "batch_smoke_summary": {
+    "batch_id": "918c0235f0fb",
+    "requested_mode": "baseline",
+    "response_count": 3,
+    "success_count": 3,
+    "partial_count": 0,
+    "failed_count": 0,
+    "responses": [
+      {
+        "request_id": "da974a1205b8",
+        "request_label": null,
+        "served_mode": "baseline",
+        "requested_mode": "baseline",
+        "source": "catalog",
+        "instance_id": "cap101",
+        "overall_status": "SUCCESS",
+        "production_default_used": false,
+        "best_known_objective": 796648.437,
+        "warnings": [],
+        "baseline": {
+          "name": "deterministic_baseline",
+          "kind": "deterministic_baseline",
+          "status": "OK",
+          "backend_name": null,
+          "model_name": null,
+          "prompt_template": null,
+          "objective": 796648.4375000001,
+          "gap_vs_best_known_pct": 6.276295273223345e-08,
+          "gap_vs_baseline_pct": null,
+          "runtime_s": 0.10483932495117188,
+          "open_facilities": [
+            0,
+            1,
+            3,
+            5,
+            6,
+            7,
+            8,
+            10,
+            12,
+            16,
+            17,
+            19,
+            22,
+            23,
+            24
+          ],
+          "assignment_count": 50,
+          "assignments_preview": [
+            7,
+            6,
+            0,
+            24,
+            7,
+            0,
+            1,
+            5,
+            7,
+            7,
+            3,
+            10,
+            5,
+            0,
+            6,
+            7,
+            3,
+            8,
+            3,
+            6
+          ],
+          "assignments": null,
+          "generated_code": null,
+          "error": null,
+          "notes": []
+        },
+        "candidate": null
+      },
+      {
+        "request_id": "d5ecdaedacf5",
+        "request_label": null,
+        "served_mode": "baseline",
+        "requested_mode": "baseline",
+        "source": "catalog",
+        "instance_id": "cap102",
+        "overall_status": "SUCCESS",
+        "production_default_used": false,
+        "best_known_objective": 854704.2,
+        "warnings": [],
+        "baseline": {
+          "name": "deterministic_baseline",
+          "kind": "deterministic_baseline",
+          "status": "OK",
+          "backend_name": null,
+          "model_name": null,
+          "prompt_template": null,
+          "objective": 854704.2000000001,
+          "gap_vs_best_known_pct": 1.3620539342960386e-14,
+          "gap_vs_baseline_pct": null,
+          "runtime_s": 0.1192166805267334,
+          "open_facilities": [
+            0,
+            3,
+            5,
+            6,
+            10,
+            11,
+            12,
+            16,
+            22,
+            23,
+            24
+          ],
+          "assignment_count": 50,
+          "assignments_preview": [
+            11,
+            11,
+            0,
+            24,
+            11,
+            0,
+            16,
+            5,
+            11,
+            11,
+            3,
+            10,
+            5,
+            0,
+            6,
+            11,
+            3,
+            10,
+            3,
+            6
+          ],
+          "assignments": null,
+          "generated_code": null,
+          "error": null,
+          "notes": []
+        },
+        "candidate": null
+      },
+      {
+        "request_id": "7b7a30c2f9b0",
+        "request_label": null,
+        "served_mode": "baseline",
+        "requested_mode": "baseline",
+        "source": "catalog",
+        "instance_id": "cap103",
+        "overall_status": "SUCCESS",
+        "production_default_used": false,
+        "best_known_objective": 893782.112,
+        "warnings": [],
+        "baseline": {
+          "name": "deterministic_baseline",
+          "kind": "deterministic_baseline",
+          "status": "OK",
+          "backend_name": null,
+          "model_name": null,
+          "prompt_template": null,
+          "objective": 893782.1125,
+          "gap_vs_best_known_pct": 5.594205514334421e-08,
+          "gap_vs_baseline_pct": null,
+          "runtime_s": 0.1104581356048584,
+          "open_facilities": [
+            3,
+            6,
+            10,
+            12,
+            16,
+            22,
+            23,
+            24
+          ],
+          "assignment_count": 50,
+          "assignments_preview": [
+            6,
+            6,
+            10,
+            24,
+            3,
+            10,
+            16,
+            10,
+            3,
+            3,
+            3,
+            10,
+            10,
+            10,
+            6,
+            3,
+            3,
+            10,
+            3,
+            6
+          ],
+          "assignments": null,
+          "generated_code": null,
+          "error": null,
+          "notes": []
+        },
+        "candidate": null
+      }
+    ]
+  },
+  "live_finetuned_serving_smoke": {
+    "request_id": "1e6f8c4defda",
+    "request_label": null,
+    "served_mode": "compare",
+    "requested_mode": "compare",
+    "source": "catalog",
+    "instance_id": "cap71",
+    "overall_status": "SUCCESS",
+    "production_default_used": false,
+    "best_known_objective": 932615.75,
+    "warnings": [],
+    "baseline": {
+      "name": "deterministic_baseline",
+      "kind": "deterministic_baseline",
+      "status": "OK",
+      "backend_name": null,
+      "model_name": null,
+      "prompt_template": null,
+      "objective": 932615.75,
+      "gap_vs_best_known_pct": 0.0,
+      "gap_vs_baseline_pct": null,
+      "runtime_s": 0.07579827308654785,
+      "open_facilities": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12
+      ],
+      "assignment_count": 50,
+      "assignments_preview": [
+        7,
+        11,
+        0,
+        5,
+        7,
+        0,
+        1,
+        2,
+        7,
+        7,
+        3,
+        10,
+        5,
+        0,
+        6,
+        7,
+        3,
+        8,
+        3,
+        6
+      ],
+      "assignments": null,
+      "generated_code": null,
+      "error": null,
+      "notes": []
+    },
+    "candidate": {
+      "name": "openai_gpt41_mini_finetuned",
+      "kind": "llm",
+      "status": "OK",
+      "backend_name": "openai",
+      "model_name": "ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH",
+      "prompt_template": "robust_v1",
+      "objective": 932615.75,
+      "gap_vs_best_known_pct": null,
+      "gap_vs_baseline_pct": 0.0,
+      "runtime_s": 15.30045485496521,
+      "open_facilities": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12
+      ],
+      "assignment_count": 50,
+      "assignments_preview": [
+        7,
+        11,
+        0,
+        5,
+        7,
+        0,
+        1,
+        2,
+        7,
+        7,
+        3,
+        10,
+        5,
+        0,
+        6,
+        7,
+        3,
+        8,
+        3,
+        6
+      ],
+      "assignments": null,
+      "generated_code": null,
+      "error": null,
+      "notes": [
+        "LLM path executed through the M4 symbolic generator and sandboxed execution runtime.",
+        "Generation and execution completed in 15.300s (execution phase 0.059s)."
+      ]
+    }
+  },
+  "manual_steps_required": [
+    "To publish the Hugging Face Space, set HF_TOKEN and HF_SPACE_ID, then run M5_DEPLOY_HF=1 python scripts/deploy_huggingface_space.py.",
+    "To make the deployed Space support live LLM/fine-tuned mode, add OPENAI_API_KEY as a Hugging Face Space secret.",
+    "To activate the VM/DigitalOcean CD path, configure M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets."
+  ]
+}

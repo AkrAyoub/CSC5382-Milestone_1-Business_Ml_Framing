@@ -22,7 +22,7 @@ M5_REPORTS_DIR = M5_ROOT / "reports"
 M5_RUNTIME_DIR = M5_ROOT / ".m5_runtime"
 M5_GENERATED_CODE_DIR = M5_RUNTIME_DIR / "generated_code"
 M5_TEMP_INPUT_DIR = M5_RUNTIME_DIR / "tmp_inputs"
-M5_MLFLOW_DIR = Path(M5_ROOT.anchor) / "csc5382_m5_mlruns"
+M5_MLFLOW_DIR = Path(M5_ROOT.anchor) / "csc5382_m5_mlruns_openai"
 
 M4_MODEL_SELECTION_PATH = M4_ROOT / "reports" / "model_selection.json"
 M4_ZENML_STATUS_PATH = M4_ROOT / "reports" / "zenml_status.json"

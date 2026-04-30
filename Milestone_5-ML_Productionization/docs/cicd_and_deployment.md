@@ -7,13 +7,17 @@ CI/CD:
   - install milestone dependencies
   - run pytest
   - run API smoke test
+  - run serving pipeline proof
   - build API and frontend Docker images
+  - build Hugging Face Space bundle
 - CD stage:
   - optional SSH deployment to a Linux VM when deployment secrets are configured
+  - optional Hugging Face Space deployment when `HF_TOKEN` and `HF_SPACE_ID` secrets are configured
 
 Deployment target:
 
 - primary target: Docker Compose on a Linux VM / DigitalOcean-style host
+- secondary hosted target: Hugging Face Spaces Streamlit app
 - local development target: Docker Desktop with Docker Compose on Windows
 - stack composition:
   - `llm-server` self-hosted OpenAI-compatible vLLM runtime

@@ -32,6 +32,8 @@ This milestone implements the data layer for the UFLP project defined in Milesto
 - Symbolic SFT manifest: [data/training/symbolic_sft_manifest.json](data/training/symbolic_sft_manifest.json)
 - Validation summary: [reports/validation/validation_summary.json](reports/validation/validation_summary.json)
 - ZenML status: [reports/zenml_status.json](reports/zenml_status.json)
+- Pipeline evidence report: [reports/m3_pipeline_results.txt](reports/m3_pipeline_results.txt)
+- Pipeline evidence JSON: [reports/m3_pipeline_results.json](reports/m3_pipeline_results.json)
 - Feast demo: [feature_repo/run_feature_store_demo.py](feature_repo/run_feature_store_demo.py)
 - Milestone 1 README: [../Milestone_1-Project_Inception/README.md](../Milestone_1-Project_Inception/README.md)
 - Milestone 2 README: [../Milestone_2-PoC/README.md](../Milestone_2-PoC/README.md)
@@ -135,6 +137,14 @@ Run DVC reproduction:
 ..\.venv-m3\Scripts\python.exe -m dvc repro
 ```
 
+Write the compact milestone evidence report after running the workflow:
+
+```powershell
+python pipeline/write_pipeline_report.py
+```
+
+The report records validation counts, anomaly status, DVC status, DVC DAG output, Feast historical retrieval output, and the most recent ZenML execution status.
+
 ### 1.5 Troubleshooting
 
 - If raw data is not found, confirm that the shared dataset exists in [../data/raw/](../data/raw/).
@@ -162,7 +172,7 @@ The schema layer is important because this project uses OR-Library text files as
 
 ### 2.2 Data Validation and Verification
 
-[pipeline/validate_data.py](pipeline/validate_data.py) validates:
+[pipeline/validate_data.py](pipeline/validate_data.py) implements a pandas-based validation layer with TFDV/Great Expectations-style checks. This project uses OR-Library text artifacts that are parsed into relational UFLP tables, so the validator focuses on project-specific contracts rather than generic tabular profiling alone. It validates:
 
 - raw dataset completeness against the expected OR-Library benchmark files
 - required columns and numeric typing
@@ -185,7 +195,7 @@ It writes:
 
 Current result: `status = passed`, `anomaly_count = 0`.
 
-The validation stage verifies not only column presence, but also project-specific consistency. For example, each processed instance must produce the expected number of facility rows, customer rows, and assignment-cost rows. This prevents silent parser errors from reaching Milestone 4 training/evaluation or Milestone 5 production serving.
+The validation stage verifies not only column presence, but also project-specific consistency. For example, each processed instance must produce the expected number of facility rows, customer rows, and assignment-cost rows. This prevents silent parser errors from reaching Milestone 4 training/evaluation or Milestone 5 production serving. The current anomaly report is empty, so no schema revisions were required for this dataset version.
 
 ### 2.3 Data Versioning
 
@@ -202,6 +212,8 @@ The current DVC stages are:
 The symbolic SFT dataset is also generated as a first-class DVC stage in [data/training/](data/training/). It is lightweight and derived directly from the processed/interim layers, then validated together with the raw, processed, and feature layers.
 
 This means the generated data can be reproduced from raw input and code rather than manually edited. The expected final remote step is a DVC remote/push when the final submission storage target is selected.
+
+Current DVC evidence is saved in [reports/m3_pipeline_results.txt](reports/m3_pipeline_results.txt) and [reports/m3_pipeline_results.json](reports/m3_pipeline_results.json). The latest report records `dvc_up_to_date = true` and includes the terminal DAG produced by `python -m dvc dag`.
 
 ### 2.4 Setting up a Feature Store
 
@@ -235,6 +247,8 @@ This keeps the milestone reproducible for local development while also satisfyin
 
 - [reports/zenml_status.json](reports/zenml_status.json)
 - [reports/zenml_status.txt](reports/zenml_status.txt)
+- [reports/m3_pipeline_results.json](reports/m3_pipeline_results.json)
+- [reports/m3_pipeline_results.txt](reports/m3_pipeline_results.txt)
 
 ZenML is the MLOps orchestration layer for this milestone. DVC handles reproducible stage dependencies and data versioning. Feast handles feature-store registration and retrieval. Together, these tools cover the data-preparation side of the project pipeline.
 

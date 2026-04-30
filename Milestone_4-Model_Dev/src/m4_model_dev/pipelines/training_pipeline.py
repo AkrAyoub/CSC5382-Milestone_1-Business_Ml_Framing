@@ -28,6 +28,7 @@ from m4_model_dev.paths import (
     M4_REFERENCE_DIR,
     M4_REPORTS_DIR,
     M4_SFT_DIR,
+    M4_SPLITS_DIR,
     ensure_runtime_dirs,
 )
 from m4_model_dev.pipelines.contracts import EvaluationInputs, SingleCandidatePipelineResult
@@ -81,15 +82,44 @@ def _read_split_df(split_path: Path) -> pd.DataFrame:
 
 
 def _build_runtime_inputs(config: dict[str, Any]) -> EvaluationInputs:
-    reference_path = build_reference_solutions(M4_REFERENCE_DIR / "reference_solutions.csv")
-    dataset_path = build_benchmark_dataset(reference_path=reference_path, output_path=M4_DATASETS_DIR / "benchmark_instances.csv")
-    split_path = build_grouped_splits(dataset_path=dataset_path)
-    sft_paths = build_sft_dataset(
-        split_path=split_path,
-        dataset_path=dataset_path,
-        reference_path=reference_path,
-        output_dir=M4_SFT_DIR,
-    )
+    reference_path = M4_REFERENCE_DIR / "reference_solutions.csv"
+    dataset_path = M4_DATASETS_DIR / "benchmark_instances.csv"
+    split_path = M4_SPLITS_DIR / "instance_splits.csv"
+    sft_manifest_path = M4_SFT_DIR / "sft_manifest.json"
+
+    if not reference_path.exists():
+        reference_path = build_reference_solutions(reference_path)
+    if not dataset_path.exists():
+        dataset_path = build_benchmark_dataset(reference_path=reference_path, output_path=dataset_path)
+    if not split_path.exists():
+        split_path = build_grouped_splits(dataset_path=dataset_path)
+    if sft_manifest_path.exists() and all(
+        (M4_SFT_DIR / filename).exists()
+        for filename in [
+            "sft_train.jsonl",
+            "sft_val.jsonl",
+            "sft_test.jsonl",
+            "sft_train.csv",
+            "sft_val.csv",
+            "sft_test.csv",
+        ]
+    ):
+        sft_paths = {
+            "manifest": sft_manifest_path,
+            "train_jsonl": M4_SFT_DIR / "sft_train.jsonl",
+            "val_jsonl": M4_SFT_DIR / "sft_val.jsonl",
+            "test_jsonl": M4_SFT_DIR / "sft_test.jsonl",
+            "train_csv": M4_SFT_DIR / "sft_train.csv",
+            "val_csv": M4_SFT_DIR / "sft_val.csv",
+            "test_csv": M4_SFT_DIR / "sft_test.csv",
+        }
+    else:
+        sft_paths = build_sft_dataset(
+            split_path=split_path,
+            dataset_path=dataset_path,
+            reference_path=reference_path,
+            output_dir=M4_SFT_DIR,
+        )
 
     dataset_df = pd.read_csv(dataset_path)
     split_df = _read_split_df(split_path)

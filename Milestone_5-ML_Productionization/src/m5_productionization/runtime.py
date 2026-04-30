@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -21,8 +22,8 @@ from m4_model_dev.models.symbolic_generator import generate_solver_code
 
 
 PRODUCTION_DEFAULT_MODE = ServingMode.BASELINE
-DEFAULT_LLM_CANDIDATE_NAME = "llm_robust_prompt_v1"
-DEPLOYMENT_TARGET = "docker-compose-with-self-hosted-openai-compatible-llm"
+DEFAULT_LLM_CANDIDATE_NAME = os.getenv("M5_DEFAULT_LLM_CANDIDATE", "openai_gpt41_mini_finetuned")
+DEPLOYMENT_TARGET = "FastAPI + Streamlit + MLflow pyfunc runtime, deployable with Docker Compose or Hugging Face Spaces"
 
 
 def _best_known_lookup() -> dict[str, float]:
@@ -49,6 +50,25 @@ def _load_selected_candidate_from_m4() -> dict[str, object] | None:
         return None
 
 
+def _has_openai_key_available() -> bool:
+    if os.getenv("OPENAI_API_KEY"):
+        return True
+    if os.name != "nt":
+        return False
+    command = [
+        "powershell",
+        "-NoProfile",
+        "-Command",
+        "[Environment]::GetEnvironmentVariable('OPENAI_API_KEY','User') -or "
+        "[Environment]::GetEnvironmentVariable('OPENAI_API_KEY','Machine')",
+    ]
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=5, check=False)
+    except Exception:
+        return False
+    return bool(result.stdout.strip())
+
+
 def build_runtime_info() -> RuntimeInfoResponse:
     selection_payload = _load_selected_candidate_from_m4()
     warnings: list[str] = []
@@ -56,6 +76,10 @@ def build_runtime_info() -> RuntimeInfoResponse:
         warnings.append(
             "The latest non-baseline candidate selected in Milestone 4 has zero validation success; "
             "the deterministic baseline remains the production-safe default runtime."
+        )
+    if DEFAULT_LLM_CANDIDATE_NAME.startswith("openai") and not _has_openai_key_available():
+        warnings.append(
+            "The default LLM candidate uses OpenAI. Set OPENAI_API_KEY to enable live LLM or fine-tuned inference."
         )
 
     candidates = [
@@ -156,6 +180,8 @@ def run_llm_runtime(
                 "Set SELF_HOSTED_OPENAI_BASE_URL (and optionally SELF_HOSTED_OPENAI_API_KEY) "
                 "to enable the self-hosted symbolic generation path."
             )
+        elif spec.backend == "openai":
+            response.notes.append("Set OPENAI_API_KEY to enable the hosted OpenAI symbolic generation path.")
         return response
 
     code_output_dir = M5_GENERATED_CODE_DIR / request_id

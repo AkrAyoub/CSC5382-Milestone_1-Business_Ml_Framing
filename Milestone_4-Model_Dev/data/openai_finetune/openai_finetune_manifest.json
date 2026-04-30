@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-04-30T05:23:21.461404+00:00",
+  "format": "OpenAI chat fine-tuning JSONL",
+  "base_model": "gpt-4.1-mini-2025-04-14",
+  "system_message": "You are an expert operations research engineer. Return only safe Python code for an OR-Tools CBC UFLP solver. Do not include commentary, markdown, prints, filesystem writes, or unsafe imports.",
+  "splits": {
+    "train": {
+      "source_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_train.jsonl + D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_val.jsonl",
+      "openai_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\openai_finetune\\openai_train.jsonl",
+      "record_count": 11,
+      "source_splits": [
+        "train",
+        "val"
+      ]
+    },
+    "val": {
+      "source_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test.jsonl",
+      "openai_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\openai_finetune\\openai_val.jsonl",
+      "record_count": 4,
+      "source_splits": [
+        "test"
+      ]
+    },
+    "test": {
+      "source_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\sft\\sft_test.jsonl",
+      "openai_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\data\\openai_finetune\\openai_test.jsonl",
+      "record_count": 4,
+      "source_splits": [
+        "test"
+      ]
+    }
+  }
+}

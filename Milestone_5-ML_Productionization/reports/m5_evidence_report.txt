@@ -1,0 +1,40 @@
+Milestone 5 Evidence Report
+
+Generated at: 2026-04-30T07:07:39.454217+00:00
+
+Requirement coverage:
+- architecture_drawing: True
+- serving_modes: ['on-demand-machine', 'on-demand-human', 'batch']
+- model_service_api: True
+- front_end_client: True
+- containerization: True
+- cicd: True
+- hosting_assets: True
+- model_serving_runtime: True
+
+Verification commands:
+- pytest: success=True returncode=0
+- smoke_test: success=True returncode=0
+- serving_pipeline: success=True returncode=0
+- huggingface_bundle: success=True returncode=0
+- docker_compose_config: success=True returncode=0
+- mlflow_packaging: success=True returncode=0
+
+Serving pipeline:
+- success: True
+- load_best_model: SUCCESS (0.84s)
+- validate_api: SUCCESS (1.30s)
+- run_api_tests: SUCCESS (0.33s)
+- register_serving: SUCCESS (17.38s)
+
+Live fine-tuned serving smoke:
+- overall_status: SUCCESS
+- candidate: openai_gpt41_mini_finetuned
+- candidate_status: OK
+- model_name: ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH
+- gap_vs_baseline_pct: 0.0
+
+Manual steps required for public hosting:
+- To publish the Hugging Face Space, set HF_TOKEN and HF_SPACE_ID, then run M5_DEPLOY_HF=1 python scripts/deploy_huggingface_space.py.
+- To make the deployed Space support live LLM/fine-tuned mode, add OPENAI_API_KEY as a Hugging Face Space secret.
+- To activate the VM/DigitalOcean CD path, configure M5_DEPLOY_HOST, M5_DEPLOY_USER, and M5_DEPLOY_SSH_KEY GitHub repository secrets.

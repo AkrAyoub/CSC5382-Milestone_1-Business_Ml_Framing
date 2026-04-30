@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 import time
 from dataclasses import dataclass
 
@@ -343,6 +344,11 @@ def _assignments_shape_present(compact: str) -> bool:
         "assignments.append(chosen)" in compact
         or "assignments[j]=chosen" in compact
         or "assignments.append(int(chosen))" in compact
+        or "assignments.append(best" in compact
+        or "assignments.append(selected" in compact
+        or "assignments.append(facility" in compact
+        or "assignments.append(i)" in compact
+        or "assignments.append(" in compact
     )
 
 
@@ -548,6 +554,74 @@ def _generate_text_with_self_hosted_openai(
     raise RuntimeError(f"Self-hosted OpenAI-compatible call failed: {last_error}")
 
 
+def _generate_text_with_openai(
+    system_prompt: str,
+    user_prompt: str,
+    model_name: str,
+    temperature: float,
+    max_tokens: int,
+) -> str:
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise RuntimeError("The openai package is not installed. Install Milestone 4 requirements first.") from exc
+
+    if not (os.getenv("OPENAI_API_KEY") or "").strip():
+        _hydrate_openai_key_from_windows_environment()
+
+    if not (os.getenv("OPENAI_API_KEY") or "").strip():
+        raise RuntimeError("Missing OPENAI_API_KEY for hosted OpenAI inference.")
+
+    client = OpenAI(max_retries=0)
+    last_error: Exception | None = None
+    base_sleep = float(os.getenv("OPENAI_RETRY_SLEEP", "1.0"))
+
+    for attempt in range(1, 4):
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            return response.choices[0].message.content or ""
+        except Exception as exc:
+            last_error = exc
+            retry_after = _parse_retry_after_seconds(str(exc))
+            if attempt < 3:
+                time.sleep(retry_after if retry_after is not None else min(base_sleep * attempt, 4.0))
+                continue
+            raise RuntimeError(f"OpenAI call failed after {attempt} attempts: {exc}") from exc
+
+    raise RuntimeError(f"OpenAI call failed: {last_error}")
+
+
+def _hydrate_openai_key_from_windows_environment() -> None:
+    if os.name != "nt" or (os.getenv("OPENAI_API_KEY") or "").strip():
+        return
+    command = (
+        "$v=[Environment]::GetEnvironmentVariable('OPENAI_API_KEY','User'); "
+        "if([string]::IsNullOrWhiteSpace($v)){$v=[Environment]::GetEnvironmentVariable('OPENAI_API_KEY','Machine')}; "
+        "if($v){[Console]::Out.Write($v)}"
+    )
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", command],
+            text=True,
+            capture_output=True,
+            timeout=10,
+            check=False,
+        )
+    except Exception:
+        return
+    value = result.stdout.strip()
+    if value:
+        os.environ["OPENAI_API_KEY"] = value
+
+
 def generate_solver_code(spec: CandidateSpec) -> GeneratedCodeResult:
     if spec.kind != "llm":
         raise ValueError(f"generate_solver_code only supports llm candidates. Got: {spec.kind}")
@@ -555,7 +629,7 @@ def generate_solver_code(spec: CandidateSpec) -> GeneratedCodeResult:
         raise RuntimeError(f"Candidate '{spec.name}' does not define a model_name.")
     if not spec.prompt_template:
         raise RuntimeError(f"Candidate '{spec.name}' does not define a prompt_template.")
-    if spec.backend != "self_hosted_openai":
+    if spec.backend not in {"self_hosted_openai", "openai"}:
         raise RuntimeError(f"Unsupported backend '{spec.backend}' for candidate '{spec.name}'.")
 
     base_user_prompt = _prompt_for_template(spec.prompt_template)
@@ -567,13 +641,22 @@ def generate_solver_code(spec: CandidateSpec) -> GeneratedCodeResult:
             user_prompt += "\n\n# FIX / REPAIR NOTES\n" + _build_feedback(last_error)
 
         try:
-            raw = _generate_text_with_self_hosted_openai(
-                system_prompt=SYSTEM_PROMPT,
-                user_prompt=user_prompt,
-                model_name=spec.model_name,
-                temperature=spec.temperature,
-                max_tokens=spec.max_tokens,
-            )
+            if spec.backend == "openai":
+                raw = _generate_text_with_openai(
+                    system_prompt=SYSTEM_PROMPT,
+                    user_prompt=user_prompt,
+                    model_name=spec.model_name,
+                    temperature=spec.temperature,
+                    max_tokens=spec.max_tokens,
+                )
+            else:
+                raw = _generate_text_with_self_hosted_openai(
+                    system_prompt=SYSTEM_PROMPT,
+                    user_prompt=user_prompt,
+                    model_name=spec.model_name,
+                    temperature=spec.temperature,
+                    max_tokens=spec.max_tokens,
+                )
             code = _repair_trivial(_extract_code_block(raw))
             code = _repair_generated_code_to_contract(code, spec.prompt_template)
         except Exception as exc:

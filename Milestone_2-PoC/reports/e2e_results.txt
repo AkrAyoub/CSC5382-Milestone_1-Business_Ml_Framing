@@ -1,0 +1,33 @@
+Milestone 2 End-to-End Validation Evidence
+
+Generated at: 2026-04-30T03:47:55.894262+00:00
+Tolerance: 1e-06
+
+Baseline validation:
+  cap71.txt: objective=932615.750, best_known=932615.75, gap_percent=0.0, runtime_s=0.049, open_facilities=11, assignments=50
+  cap74.txt: objective=1034976.975, best_known=1034976.975, gap_percent=1.1248107410982242e-14, runtime_s=0.075, open_facilities=4, assignments=50
+  cap131.txt: objective=793439.563, best_known=793439.562, gap_percent=6.30167823616018e-08, runtime_s=0.168, open_facilities=15, assignments=50
+Baseline status: OK
+
+LLM verification:
+  status=OK
+  enabled=True
+  instance=cap71.txt
+  backend=groq
+  model=llama-3.1-8b-instant
+  baseline_objective=932615.750
+  llm_objective=932615.750
+  gap_vs_baseline_pct=0.000000
+  open_facilities=11
+  assignments=50
+  trace:
+    - 1) Solve the instance with the deterministic CBC baseline: OK (0.080s)
+    - 2) Generate solver code with off-the-shelf LLM (attempt 1): FAIL (2.458s)
+    - 2) Generate solver code with off-the-shelf LLM (attempt 2): OK (1.324s)
+    - 3) Execute generated solver in sandbox (attempt 2): OK (0.056s)
+    - 4) Compare generated solver output vs deterministic baseline: OK (0.000s)
+
+Validation commands:
+  $env:E2E_ENABLE_LLM="0"; python tests\e2e.py
+  python -m pytest tests\e2e.py -q
+  $env:E2E_ENABLE_LLM="1"; $env:GROQ_API_KEY="YOUR_KEY"; python tests\e2e.py

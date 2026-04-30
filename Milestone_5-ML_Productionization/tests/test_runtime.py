@@ -11,7 +11,8 @@ from m5_productionization.service import ProductionizationService
 def test_runtime_info_defaults() -> None:
     runtime_info = build_runtime_info()
     assert runtime_info.safe_default_mode == ServingMode.BASELINE
-    assert runtime_info.default_llm_candidate_name == "llm_robust_prompt_v1"
+    assert runtime_info.default_llm_candidate_name == "openai_gpt41_mini_finetuned"
+    assert any(candidate.name == "openai_gpt41_mini_finetuned" for candidate in runtime_info.available_candidates)
 
 
 def test_inline_baseline_matches_catalog_baseline() -> None:

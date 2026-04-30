@@ -32,6 +32,27 @@ except ImportError:
     from paths import M3_ROOT, ZEN_CONFIG_DIR, ZEN_LOCAL_STORE_DIR, ZENML_STATUS_JSON, ZENML_STATUS_TXT
 
 
+def _zenml_runtime_dirs() -> tuple[Path, Path]:
+    return ZEN_CONFIG_DIR / "current", ZEN_LOCAL_STORE_DIR / "current"
+
+
+def _prime_zenml_runtime_env() -> None:
+    config_dir, local_store_dir = _zenml_runtime_dirs()
+    for path in (config_dir, local_store_dir):
+        path.mkdir(parents=True, exist_ok=True)
+
+    os.environ["ZENML_CONFIG_PATH"] = str(config_dir)
+    os.environ["ZENML_LOCAL_STORES_PATH"] = str(local_store_dir)
+    os.environ["ZENML_DEFAULT_USER_NAME"] = "default"
+    os.environ["ZENML_DEFAULT_USER_PASSWORD"] = "default"
+    os.environ["ZENML_DISABLE_INTERACTIVE_INPUT"] = "true"
+    os.environ["ZENML_DISABLE_PIPELINE_LOGS_STORAGE"] = "true"
+    os.environ["ZENML_DISABLE_STEP_LOGS_STORAGE"] = "true"
+
+
+_prime_zenml_runtime_env()
+
+
 def _patch_sqlalchemy_uuid_binding() -> None:
     try:
         import sqlalchemy.sql.sqltypes as sqltypes
@@ -139,11 +160,12 @@ if pipeline is not None:
 
 
 def _configure_zenml_runtime() -> None:
-    for path in (ZEN_CONFIG_DIR, ZEN_LOCAL_STORE_DIR):
+    config_dir, local_store_dir = _zenml_runtime_dirs()
+    for path in (config_dir, local_store_dir):
         path.mkdir(parents=True, exist_ok=True)
 
-    os.environ["ZENML_CONFIG_PATH"] = str(ZEN_CONFIG_DIR)
-    os.environ["ZENML_LOCAL_STORES_PATH"] = str(ZEN_LOCAL_STORE_DIR)
+    os.environ["ZENML_CONFIG_PATH"] = str(config_dir)
+    os.environ["ZENML_LOCAL_STORES_PATH"] = str(local_store_dir)
     os.environ["ZENML_DEFAULT_USER_NAME"] = "default"
     os.environ["ZENML_DEFAULT_USER_PASSWORD"] = "default"
     os.environ["ZENML_DISABLE_INTERACTIVE_INPUT"] = "true"

@@ -1,0 +1,10 @@
+fastapi
+streamlit
+requests
+httpx
+pandas
+mlflow
+ortools
+openai
+pydantic
+pyyaml

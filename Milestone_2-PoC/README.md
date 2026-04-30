@@ -9,8 +9,9 @@ This milestone implements a proof of concept for the Milestone 1 project directi
   - [1.2 Installation and Setup](#12-installation-and-setup)
   - [1.3 Running the Streamlit App](#13-running-the-streamlit-app)
   - [1.4 Demo Flow](#14-demo-flow)
-  - [1.5 Screenshots](#15-screenshots)
-  - [1.6 Troubleshooting](#16-troubleshooting)
+  - [1.5 Validation Commands](#15-validation-commands)
+  - [1.6 Screenshots](#16-screenshots)
+  - [1.7 Troubleshooting](#17-troubleshooting)
 - [2. Milestone 2 - Development of Proof-of-Concepts](#2-milestone-2---development-of-proof-of-concepts)
   - [2.1 Model Integration](#21-model-integration)
   - [2.2 App Development](#22-app-development)
@@ -27,6 +28,8 @@ This milestone implements a proof of concept for the Milestone 1 project directi
 - Sandboxed execution: [src/exec_generated.py](src/exec_generated.py)
 - Shared dataset paths: [src/paths.py](src/paths.py)
 - End-to-end tests: [tests/e2e.py](tests/e2e.py)
+- End-to-end results evidence: [reports/e2e_results.txt](reports/e2e_results.txt)
+- Structured E2E results: [reports/e2e_results.json](reports/e2e_results.json)
 - Shared dataset: [../data/raw/](../data/raw/)
 - Best-known objectives: [../data/raw/uncapopt.txt](../data/raw/uncapopt.txt)
 
@@ -93,11 +96,34 @@ The demo flow is:
 
 This replaces the older split between a baseline-only mode and a separate LLM mode with one clearer scenario centered on the trusted baseline.
 
-### 1.5 Screenshots
+### 1.5 Validation Commands
+
+Run the deterministic end-to-end scenario without an external API key:
+
+```powershell
+$env:E2E_ENABLE_LLM="0"
+python tests\e2e.py
+```
+
+Run the pytest-compatible validation path:
+
+```powershell
+python -m pytest tests\e2e.py -q
+```
+
+Run optional LLM verification when credentials are available:
+
+```powershell
+$env:E2E_ENABLE_LLM="1"
+$env:GROQ_API_KEY="YOUR_KEY"
+python tests\e2e.py
+```
+
+### 1.6 Screenshots
 
 Captured application screenshots are stored in [assets/screenshots/](assets/screenshots/). The folder includes baseline runs and LLM-verification runs that can be reused in the milestone report and demo package.
 
-### 1.6 Troubleshooting
+### 1.7 Troubleshooting
 
 - If `streamlit` is not found, use `python -m streamlit run app.py`.
 - If `No instances found` appears, verify that the dataset exists in [../data/raw/](../data/raw/).
@@ -121,6 +147,13 @@ Implementation evidence:
 - Shared data path contract: [src/paths.py](src/paths.py)
 
 The baseline parser reads OR-Library UFLP files, ignores capacities and demands as required by the project contract, builds the canonical uncapacitated facility-location MILP, solves with OR-Tools/CBC, and compares against [../data/raw/uncapopt.txt](../data/raw/uncapopt.txt). The optional LLM path uses the LLM as a symbolic modeler: it generates solver code, while OR-Tools/CBC remains the executor and verifier.
+
+| Component | Role in the PoC | Evidence |
+|---|---|---|
+| Deterministic OR-Tools/CBC baseline | Trusted reference solver and verifier | [src/baseline_solver.py](src/baseline_solver.py) |
+| Groq-hosted LLM | Optional symbolic model/code generator | [src/llm_backend.py](src/llm_backend.py), [src/llm_generate.py](src/llm_generate.py) |
+| Sandboxed executor | Runs generated code and validates objective/assignments | [src/exec_generated.py](src/exec_generated.py) |
+| Scenario runner | Connects baseline, optional LLM, execution, and comparison | [src/poc_pipeline.py](src/poc_pipeline.py) |
 
 This satisfies the model-integration requirement because the PoC runs a real project baseline on the actual benchmark data and demonstrates the LLM-assisted symbolic modeling path without replacing the trusted solver.
 
@@ -147,6 +180,8 @@ Implementation evidence:
 
 - End-to-end test: [tests/e2e.py](tests/e2e.py)
 - App smoke flow: [app.py](app.py)
+- Saved validation output: [reports/e2e_results.txt](reports/e2e_results.txt)
+- Structured validation output: [reports/e2e_results.json](reports/e2e_results.json)
 
 The tested scenario is:
 

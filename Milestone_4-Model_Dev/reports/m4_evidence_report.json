@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-04-30T06:27:53.707916+00:00",
+  "tests": {
+    "command": "C:\\Users\\Nyx\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe scripts/run_tests.py",
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "test_ordering_uses_validation_metrics_and_ignores_baseline_for_selection (test_comparison_selection.ComparisonSelectionTests.test_ordering_uses_validation_metrics_and_ignores_baseline_for_selection) ... ok\ntest_train_and_compare_candidate_overrides_match (test_config_alignment.ConfigAlignmentTests.test_train_and_compare_candidate_overrides_match) ... ok\ntest_train_best_candidate_exists_in_comparison_candidates (test_config_alignment.ConfigAlignmentTests.test_train_best_candidate_exists_in_comparison_candidates) ... ok\ntest_default_candidates_include_expected_symbolic_variants (test_model_registry.ModelRegistryTests.test_default_candidates_include_expected_symbolic_variants) ... ok\ntest_fine_tuned_candidate_can_be_enabled_from_environment (test_model_registry.ModelRegistryTests.test_fine_tuned_candidate_can_be_enabled_from_environment) ... ok\ntest_override_updates_candidate_metadata (test_model_registry.ModelRegistryTests.test_override_updates_candidate_metadata) ... ok\ntest_openai_base_candidate_is_available (test_openai_track.OpenAITrackTests.test_openai_base_candidate_is_available) ... ok\ntest_openai_finetuned_candidate_can_be_enabled_from_environment (test_openai_track.OpenAITrackTests.test_openai_finetuned_candidate_can_be_enabled_from_environment) ... ok\ntest_sft_record_converts_to_openai_chat_format (test_openai_track.OpenAITrackTests.test_sft_record_converts_to_openai_chat_format) ... ok\ntest_live_candidate_fails_without_endpoint_when_template_fallback_is_disabled (test_symbolic_generator.SymbolicGeneratorTests.test_live_candidate_fails_without_endpoint_when_template_fallback_is_disabled) ... ok\ntest_live_draft_repair_normalizes_known_robust_failure (test_symbolic_generator.SymbolicGeneratorTests.test_live_draft_repair_normalizes_known_robust_failure) ... ok\ntest_live_draft_repair_normalizes_known_token_failure (test_symbolic_generator.SymbolicGeneratorTests.test_live_draft_repair_normalizes_known_token_failure) ... ok\ntest_robust_candidate_falls_back_to_validated_template_without_endpoint (test_symbolic_generator.SymbolicGeneratorTests.test_robust_candidate_falls_back_to_validated_template_without_endpoint) ... ok\ntest_token_candidate_template_handles_literal_capacity_variant (test_symbolic_generator.SymbolicGeneratorTests.test_token_candidate_template_handles_literal_capacity_variant) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 1.749s\n\nOK",
+    "success": true
+  },
+  "zenml": {
+    "success": true,
+    "config_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\configs\\train_best_model.yaml",
+    "details": "ZenML pipeline executed successfully."
+  },
+  "mlflow": {
+    "logged": true,
+    "registered_model_name": "m4-openai-gpt41-mini-base",
+    "artifact_log_errors": []
+  },
+  "model_versioning": {
+    "registered_model_name": "m4-openai-gpt41-mini-base",
+    "candidate_spec_path": "D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\artifacts\\openai_gpt41_mini_base_spec.json",
+    "robust_candidate_spec": {
+      "name": "llm_robust_prompt_v1",
+      "kind": "llm",
+      "backend": "self_hosted_openai",
+      "model_name": "llama-3.1-8b-instant",
+      "prompt_template": "robust_v1",
+      "temperature": 0.0,
+      "max_tokens": 850,
+      "enabled": true,
+      "notes": "Improved robust parser prompt evaluated against a self-hosted OpenAI-compatible code model runtime. Runtime endpoint: https://api.groq.com/openai/v1."
+    },
+    "fine_tuned_candidate_spec": {
+      "name": "llm_fine_tuned",
+      "kind": "llm",
+      "backend": "self_hosted_openai",
+      "model_name": null,
+      "prompt_template": "robust_v1",
+      "temperature": 0.0,
+      "max_tokens": 850,
+      "enabled": false,
+      "notes": "Optional self-hosted fine-tuned slot resolved from environment after SFT/LoRA training."
+    },
+    "fine_tuned_enabled": true
+  },
+  "openai_finetuning": {
+    "manifest_available": true,
+    "train_records": 11,
+    "validation_records": 4,
+    "job_artifact_available": true,
+    "job_id": "ftjob-W3ZY03L6gkPK4hsXLhvdvTHF",
+    "status": "succeeded",
+    "fine_tuned_model": "ft:gpt-4.1-mini-2025-04-14:aui:uflp-symbolic-solver:DaENP2ZH"
+  },
+  "comparison": {
+    "selection": {
+      "selection_rule": "highest validation success rate, tie-broken by validation exact match rate, then by lower validation mean gap vs baseline, then candidate_name",
+      "selected_candidate_name": "openai_gpt41_mini_base",
+      "selected_candidate_kind": "llm",
+      "selected_backend_name": "openai",
+      "selected_model_name": "gpt-4.1-mini-2025-04-14",
+      "selected_prompt_template": "robust_v1",
+      "selected_validation_success_rate": 1.0,
+      "selected_validation_exact_match_rate": 1.0,
+      "selected_validation_mean_gap_vs_baseline_pct": 0.0
+    },
+    "summary": {
+      "available": true,
+      "row_count": 9,
+      "validation_candidate_count": 2,
+      "uses_template_fallback": false,
+      "template_fallback_rows": 0,
+      "candidate_rows": [
+        {
+          "candidate_name": "openai_gpt41_mini_base",
+          "split": "train",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 7
+        },
+        {
+          "candidate_name": "openai_gpt41_mini_base",
+          "split": "val",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 4
+        },
+        {
+          "candidate_name": "openai_gpt41_mini_base",
+          "split": "test",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 4
+        },
+        {
+          "candidate_name": "openai_gpt41_mini_finetuned",
+          "split": "train",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 7
+        },
+        {
+          "candidate_name": "openai_gpt41_mini_finetuned",
+          "split": "val",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 4
+        },
+        {
+          "candidate_name": "openai_gpt41_mini_finetuned",
+          "split": "test",
+          "generation_success_rate": 1.0,
+          "execution_success_rate": 1.0,
+          "exact_match_rate": 1.0,
+          "attempted_instances": 4
+        }
+      ]
+    }
+  },
+  "single_candidate_live_run": {
+    "summary": {
+      "available": true,
+      "row_count": 3,
+      "candidate_name": "openai_gpt41_mini_base",
+      "generation_backend_name": "openai",
+      "successful_instances": 15,
+      "failed_instances": 0,
+      "skipped_instances": 0
+    },
+    "human_summary": "Milestone 4 symbolic model evaluation summary\nrun_name: openai_gpt41_mini_base_live\ncandidate_name: openai_gpt41_mini_base\ncandidate_kind: llm\nbackend_name: openai\nmodel_name: gpt-4.1-mini-2025-04-14\nprompt_template: robust_v1\ncandidate_spec_path: D:\\aui\\Ayoub\\Spring_2026\\AI for Digital Transformation\\Project\\Milestone 5 - Productionization + Refactoring\\CSC5382-Project\\Milestone_4-Model_Dev\\artifacts\\openai_gpt41_mini_base_spec.json\nmlflow_logged: True\nregistered_model_name: m4-openai-gpt41-mini-base\ncodecarbon_emissions_logged: True\nsplit_counts:\n  - train: 7\n  - val: 4\n  - test: 4\naggregated_metrics:\n  - train: success_rate=1.0000, generation_success_rate=1.0000, execution_success_rate=1.0000, feasibility_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=19.6882, attempted=7, ok=7, failed=0, skipped=0, generation_backend=openai\n  - val: success_rate=1.0000, generation_success_rate=1.0000, execution_success_rate=1.0000, feasibility_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=18.9620, attempted=4, ok=4, failed=0, skipped=0, generation_backend=openai\n  - test: success_rate=1.0000, generation_success_rate=1.0000, execution_success_rate=1.0000, feasibility_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=48.3798, attempted=4, ok=4, failed=0, skipped=0, generation_backend=openai"
+  },
+  "energy": {
+    "available": true,
+    "timestamp": "2026-04-30T07:24:59",
+    "emissions_kg": 0.0022781644095963105,
+    "energy_consumed_kwh": 0.0036160536267389465,
+    "duration_s": 408.7196498999838,
+    "country_iso_code": "MAR"
+  },
+  "known_limitations": [
+    "The OpenAI fine-tuning dataset is intentionally small because this milestone is a proof of MLOps training and evaluation integration, not final production model scaling.",
+    "Template fallback rows, if any, are explicitly marked with generation_backend_name=template_fallback in comparison outputs."
+  ]
+}

@@ -1,10 +1,10 @@
 Milestone 4 symbolic candidate comparison summary
 
 Ranking by validation success rate, then exact match rate, then validation mean gap vs baseline:
-- llm_robust_prompt_v1: success_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=20.9589
-- llm_token_prompt_v0: success_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=21.4994
+- openai_gpt41_mini_base: success_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=19.3445
+- openai_gpt41_mini_finetuned: success_rate=1.0000, exact_match_rate=1.0000, mean_gap_vs_baseline_pct=0.0000, mean_runtime_s=19.2102
 
-Selected non-baseline candidate: llm_robust_prompt_v1
+Selected non-baseline candidate: openai_gpt41_mini_base
 Validation success rate: 1.0000
 Validation exact match rate: 1.0000
 Validation mean gap vs baseline: 0.0000
